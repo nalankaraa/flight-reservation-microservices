@@ -16,33 +16,42 @@ public class SecurityMiddleware
         var path = context.Request.Path.Value?.ToLower();
         var method = context.Request.Method;
 
-        //  401 check
-        if (IsProtectedRoute(path))
+        //  AUTH CHECK (401)
+        if (IsProtectedRoute(path) && !HasAuthorizationHeader(context))
         {
-            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(authHeader))
-            {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                await context.Response.WriteAsync("Unauthorized");
-                return;
-            }
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsync("Unauthorized");
+            return;
         }
 
-        //  403 check (YENÝ EKLENEN)
-        if (IsAdminRoute(path, method))
+        //  ROLE CHECK (403)
+        if (IsAdminRoute(path, method) && !IsAdmin(context))
         {
-            var roleHeader = context.Request.Headers["Role"].FirstOrDefault();
-
-            if (!string.Equals(roleHeader, "Admin", StringComparison.OrdinalIgnoreCase))
-            {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsync("Forbidden");
-                return;
-            }
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await context.Response.WriteAsync("Forbidden");
+            return;
         }
 
         await _next(context);
+    }
+
+    // ============================
+    //  REFACTOR: HELPER METHODS
+    // ============================
+
+    // YENÝ: Authorization header kontrolü ayrý metoda alýndý
+    private static bool HasAuthorizationHeader(HttpContext context)
+    {
+        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+        return !string.IsNullOrWhiteSpace(authHeader);
+    }
+
+    // YENÝ: Role kontrolü ayrý metoda alýndý
+    private static bool IsAdmin(HttpContext context)
+    {
+        var roleHeader = context.Request.Headers["Role"].FirstOrDefault();
+
+        return string.Equals(roleHeader, "Admin", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsProtectedRoute(string? path)
