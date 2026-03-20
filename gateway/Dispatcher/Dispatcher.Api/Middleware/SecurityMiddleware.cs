@@ -14,7 +14,9 @@ public class SecurityMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var path = context.Request.Path.Value?.ToLower();
+        var method = context.Request.Method;
 
+        //  401 check
         if (IsProtectedRoute(path))
         {
             var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
@@ -27,6 +29,19 @@ public class SecurityMiddleware
             }
         }
 
+        //  403 check (YENÝ EKLENEN)
+        if (IsAdminRoute(path, method))
+        {
+            var roleHeader = context.Request.Headers["Role"].FirstOrDefault();
+
+            if (!string.Equals(roleHeader, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsync("Forbidden");
+                return;
+            }
+        }
+
         await _next(context);
     }
 
@@ -35,11 +50,15 @@ public class SecurityMiddleware
         if (string.IsNullOrWhiteSpace(path))
             return false;
 
-        var protectedRoutes = new[]
-        {
-            "/api/flights"
-        };
+        return path.StartsWith("/api/flights");
+    }
 
-        return protectedRoutes.Any(route => path.StartsWith(route));
+    private static bool IsAdminRoute(string? path, string method)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        return path.StartsWith("/api/flights") &&
+               method.Equals("POST", StringComparison.OrdinalIgnoreCase);
     }
 }
