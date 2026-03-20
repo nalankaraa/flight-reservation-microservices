@@ -15,15 +15,7 @@ public class SecurityMiddleware
     {
         var path = context.Request.Path.Value?.ToLower();
 
-        var protectedRoutes = new[]
-        {
-            "/api/flights"
-        };
-
-        var isProtectedRoute = protectedRoutes.Any(route =>
-            path != null && path.StartsWith(route));
-
-        if (isProtectedRoute)
+        if (IsProtectedRoute(path))
         {
             var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
 
@@ -36,5 +28,18 @@ public class SecurityMiddleware
         }
 
         await _next(context);
+    }
+
+    private static bool IsProtectedRoute(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        var protectedRoutes = new[]
+        {
+            "/api/flights"
+        };
+
+        return protectedRoutes.Any(route => path.StartsWith(route));
     }
 }
