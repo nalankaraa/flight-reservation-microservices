@@ -11,4 +11,10 @@ public class GatewayController : ControllerBase
     {
         return Ok("Forwarded to FlightService");
     }
+
+    [HttpPost("flights")]
+    public IActionResult PostFlights()
+    {
+        return Ok("Forwarded to FlightService");
+    }
 }
