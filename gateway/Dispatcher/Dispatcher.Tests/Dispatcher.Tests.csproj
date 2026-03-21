@@ -22,6 +22,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dispatcher.Api\Dispatcher.Api.csproj" />
+    <ProjectReference Include="..\Dispatcher.Domain\Dispatcher.Domain.csproj" />
+    <ProjectReference Include="..\Dispatcher.Infrastructure\Dispatcher.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
