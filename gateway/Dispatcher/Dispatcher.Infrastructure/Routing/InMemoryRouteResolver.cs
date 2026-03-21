@@ -4,19 +4,29 @@ namespace Dispatcher.Infrastructure.Routing;
 
 public class InMemoryRouteResolver : IRouteResolver
 {
-    private readonly List<RouteDefinition> _routes = new()
+    //  List yerine IReadOnlyList (immutability)
+    private readonly IReadOnlyList<RouteDefinition> _routes;
+
+    public InMemoryRouteResolver()
     {
-        new RouteDefinition
+        _routes = new List<RouteDefinition>
         {
-            PathPrefix = "/api/flights",
-            HttpMethod = "GET",
-            TargetServiceName = "FlightService",
-            TargetBaseUrl = "http://flightservice:5002"
-        }
-    };
+            new RouteDefinition
+            {
+                PathPrefix = "/api/flights",
+                HttpMethod = "GET",
+                TargetServiceName = "FlightService",
+                TargetBaseUrl = "http://flightservice:5002"
+            }
+        };
+    }
 
     public RouteDefinition? Resolve(string path, string method)
     {
+        // Guard clause (null/empty check)
+        if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(method))
+            return null;
+
         return _routes.FirstOrDefault(route =>
             path.StartsWith(route.PathPrefix, StringComparison.OrdinalIgnoreCase) &&
             route.HttpMethod.Equals(method, StringComparison.OrdinalIgnoreCase));
