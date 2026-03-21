@@ -4,7 +4,16 @@ namespace Dispatcher.Infrastructure.Routing;
 
 public class InMemoryRouteResolver : IRouteResolver
 {
-    private readonly List<RouteDefinition> _routes = new();
+    private readonly List<RouteDefinition> _routes = new()
+    {
+        new RouteDefinition
+        {
+            PathPrefix = "/api/flights",
+            HttpMethod = "GET",
+            TargetServiceName = "FlightService",
+            TargetBaseUrl = "http://flightservice:5002"
+        }
+    };
 
     public RouteDefinition? Resolve(string path, string method)
     {
