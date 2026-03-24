@@ -26,13 +26,35 @@ public class GatewayController : ControllerBase
         if (route is null)
             return NotFound();
 
-        var result = await _requestForwarder.ForwardAsync(route.TargetBaseUrl);
-        return Ok(result);
+        var response = await _requestForwarder.ForwardAsync(
+            "GET",
+            route.TargetBaseUrl + "/api/flights",
+            new Dictionary<string, string>(),
+            Stream.Null
+        );
+
+        var content = await response.Content.ReadAsStringAsync();
+
+        return Content(content, "text/plain"); 
     }
 
     [HttpPost("flights")]
-    public IActionResult PostFlights()
+    public async Task<IActionResult> PostFlights()
     {
-        return Ok("Forwarded to FlightService");
+        var route = _routeResolver.Resolve("/api/flights", "POST");
+
+        if (route is null)
+            return NotFound();
+
+        var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
+
+        var result = await _requestForwarder.ForwardAsync(
+            route.TargetBaseUrl,
+            Request.Method,
+            headers,
+            Request.Body
+        );
+
+        return Ok(result);
     }
 }

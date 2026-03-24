@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace Dispatcher.Api.Middleware;
 
 public class SecurityMiddleware
@@ -16,7 +14,7 @@ public class SecurityMiddleware
         var path = context.Request.Path.Value?.ToLower();
         var method = context.Request.Method;
 
-        //  AUTH CHECK (401)
+        // AUTH CHECK (401)
         if (IsProtectedRoute(path) && !HasAuthorizationHeader(context))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -24,7 +22,7 @@ public class SecurityMiddleware
             return;
         }
 
-        //  ROLE CHECK (403)
+        // ROLE CHECK (403)
         if (IsAdminRoute(path, method) && !IsAdmin(context))
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
@@ -32,25 +30,23 @@ public class SecurityMiddleware
             return;
         }
 
+        // Forwarding YOK  Controller yapacak
         await _next(context);
     }
 
     // ============================
-    //  REFACTOR: HELPER METHODS
+    // HELPER METHODS
     // ============================
 
-    // YENÝ: Authorization header kontrolü ayrý metoda alýndý
     private static bool HasAuthorizationHeader(HttpContext context)
     {
         var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
         return !string.IsNullOrWhiteSpace(authHeader);
     }
 
-    // YENÝ: Role kontrolü ayrý metoda alýndý
     private static bool IsAdmin(HttpContext context)
     {
         var roleHeader = context.Request.Headers["Role"].FirstOrDefault();
-
         return string.Equals(roleHeader, "Admin", StringComparison.OrdinalIgnoreCase);
     }
 
