@@ -34,5 +34,12 @@ public class MongoRouteRepositoryTests : IDisposable
         result!.PathPrefix.Should().Be("/api/flights");
         result.TargetServiceName.Should().Be("FlightService");
     }
+    [Fact]
+    public async Task FindRouteAsync_UnknownPath_ReturnsNull()
+    {
+        var result = await _repository.FindRouteAsync("/api/unknown", "GET");
+        result.Should().BeNull();
+    }
+
     public void Dispose() => _runner.Dispose();
 }
