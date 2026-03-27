@@ -1,7 +1,6 @@
 using Dispatcher.Application.Forwarding;
 using Dispatcher.Domain.Routing;
 using Microsoft.AspNetCore.Mvc;
-using Dispatcher.Infrastructure.Routing;
 
 namespace Dispatcher.Api.Controllers;
 
@@ -21,40 +20,39 @@ public class GatewayController : ControllerBase
     [HttpGet("flights")]
     public async Task<IActionResult> GetFlights()
     {
-        var route = _routeResolver.Resolve("/api/flights", "GET");
-
-        if (route is null)
-            return NotFound();
-
-        var response = await _requestForwarder.ForwardAsync(
-            "GET",
-            route.TargetBaseUrl + "/api/flights",
-            new Dictionary<string, string>(),
-            Stream.Null
-        );
-
-        var content = await response.Content.ReadAsStringAsync();
-
-        return Content(content, "text/plain"); 
+        return await ForwardRequest("/api/flights", "GET");
     }
 
     [HttpPost("flights")]
     public async Task<IActionResult> PostFlights()
     {
-        var route = _routeResolver.Resolve("/api/flights", "POST");
+        return await ForwardRequest("/api/flights", "POST");
+    }
+
+    private async Task<IActionResult> ForwardRequest(string path, string method)
+    {
+        var route = _routeResolver.Resolve(path, method);
 
         if (route is null)
             return NotFound();
 
         var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
 
-        var result = await _requestForwarder.ForwardAsync(
-            route.TargetBaseUrl,
-            Request.Method,
+        var response = await _requestForwarder.ForwardAsync(
+            method,
+            route.TargetBaseUrl + path,
             headers,
             Request.Body
         );
 
-        return Ok(result);
+        var content = await response.Content.ReadAsStringAsync();
+        var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
+
+        return new ContentResult
+        {
+            StatusCode = (int)response.StatusCode,
+            Content = content,
+            ContentType = contentType
+        };
     }
 }
