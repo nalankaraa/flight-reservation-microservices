@@ -33,13 +33,15 @@ public class InMemoryRouteResolver : IRouteResolver
         };
     }
 
-    public RouteDefinition? Resolve(string path, string method)
+    public Task<RouteDefinition?> ResolveAsync(string path, string method)
     {
         if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(method))
-            return null;
+            return Task.FromResult<RouteDefinition?>(null);
 
-        return _routes.FirstOrDefault(route =>
+        var route = _routes.FirstOrDefault(route =>
             path.StartsWith(route.PathPrefix, StringComparison.OrdinalIgnoreCase) &&
             route.HttpMethod.Equals(method, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult<RouteDefinition?>(route);
     }
 }

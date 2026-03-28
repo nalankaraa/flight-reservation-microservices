@@ -31,28 +31,34 @@ public class GatewayController : ControllerBase
 
     private async Task<IActionResult> ForwardRequest(string path, string method)
     {
-        var route = _routeResolver.Resolve(path, method);
+        var route = await _routeResolver.ResolveAsync(path, method);
 
         if (route is null)
             return NotFound();
 
         var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
 
-        var response = await _requestForwarder.ForwardAsync(
-            method,
-            route.TargetBaseUrl + path,
-            headers,
-            Request.Body
-        );
-
-        var content = await response.Content.ReadAsStringAsync();
-        var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
-
-        return new ContentResult
+        try
         {
-            StatusCode = (int)response.StatusCode,
-            Content = content,
-            ContentType = contentType
-        };
+            var response = await _requestForwarder.ForwardAsync(
+                method,
+                route.TargetBaseUrl + path,
+                headers,
+                Request.Body
+            );
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return new ContentResult
+            {
+                StatusCode = (int)response.StatusCode,
+                Content = content,
+                ContentType = "application/json"
+            };
+        }
+        catch (HttpRequestException)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, "Bad Gateway");
+        }
     }
 }
