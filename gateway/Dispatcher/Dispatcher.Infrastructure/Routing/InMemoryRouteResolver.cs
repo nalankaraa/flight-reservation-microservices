@@ -18,7 +18,7 @@ public class InMemoryRouteResolver : IRouteResolver
                 TargetServiceName = "FlightService",
                 TargetBaseUrl = "http://flightservice:5002",
                 RequiresAuth = true,
-                AllowedRoles = new List<string>()
+                AllowedRoles = new List<string> { "Admin", "User" }
             },
             new RouteDefinition
             {
