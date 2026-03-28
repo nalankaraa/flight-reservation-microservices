@@ -1,3 +1,5 @@
+using Dispatcher.Domain.Routing;
+
 namespace Dispatcher.Api.Middleware;
 
 public class SecurityMiddleware
@@ -9,34 +11,32 @@ public class SecurityMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, IRouteResolver routeResolver)
     {
-        var path = context.Request.Path.Value?.ToLower();
+        var path = context.Request.Path.Value ?? string.Empty;
         var method = context.Request.Method;
 
-        // AUTH CHECK (401)
-        if (IsProtectedRoute(path) && !HasAuthorizationHeader(context))
+        var route = routeResolver.Resolve(path, method);
+
+        if (route is not null)
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsync("Unauthorized");
-            return;
+            if (route.RequiresAuth && !HasAuthorizationHeader(context))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsync("Unauthorized");
+                return;
+            }
+
+            if (route.AllowedRoles.Any() && !IsUserInAllowedRoles(context, route.AllowedRoles))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsync("Forbidden");
+                return;
+            }
         }
 
-        // ROLE CHECK (403)
-        if (IsAdminRoute(path, method) && !IsAdmin(context))
-        {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            await context.Response.WriteAsync("Forbidden");
-            return;
-        }
-
-        // Forwarding YOK  Controller yapacak
         await _next(context);
     }
-
-    // ============================
-    // HELPER METHODS
-    // ============================
 
     private static bool HasAuthorizationHeader(HttpContext context)
     {
@@ -44,26 +44,14 @@ public class SecurityMiddleware
         return !string.IsNullOrWhiteSpace(authHeader);
     }
 
-    private static bool IsAdmin(HttpContext context)
+    private static bool IsUserInAllowedRoles(HttpContext context, List<string> allowedRoles)
     {
         var roleHeader = context.Request.Headers["Role"].FirstOrDefault();
-        return string.Equals(roleHeader, "Admin", StringComparison.OrdinalIgnoreCase);
-    }
 
-    private static bool IsProtectedRoute(string? path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(roleHeader))
             return false;
 
-        return path.StartsWith("/api/flights");
-    }
-
-    private static bool IsAdminRoute(string? path, string method)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-            return false;
-
-        return path.StartsWith("/api/flights") &&
-               method.Equals("POST", StringComparison.OrdinalIgnoreCase);
+        return allowedRoles.Any(role =>
+            string.Equals(role, roleHeader, StringComparison.OrdinalIgnoreCase));
     }
 }
