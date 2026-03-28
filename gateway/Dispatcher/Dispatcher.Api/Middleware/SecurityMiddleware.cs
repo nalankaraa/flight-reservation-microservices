@@ -16,7 +16,7 @@ public class SecurityMiddleware
         var path = context.Request.Path.Value ?? string.Empty;
         var method = context.Request.Method;
 
-        var route = routeResolver.Resolve(path, method);
+        var route = await routeResolver.ResolveAsync(path, method);
 
         if (route is not null)
         {

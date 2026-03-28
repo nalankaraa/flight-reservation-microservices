@@ -1,4 +1,3 @@
-using Dispatcher.Domain.Routing;
 using Dispatcher.Infrastructure.Routing;
 using FluentAssertions;
 using Xunit;
@@ -8,13 +7,13 @@ namespace Dispatcher.Tests;
 public class RoutingTests
 {
     [Fact]
-    public void Resolve_Should_Return_FlightService_Route_For_GetFlights()
+    public async Task ResolveAsync_Should_Return_FlightService_Route_For_GetFlights()
     {
         // Arrange
         var resolver = new InMemoryRouteResolver();
 
         // Act
-        var route = resolver.Resolve("/api/flights", "GET");
+        var route = await resolver.ResolveAsync("/api/flights", "GET");
 
         // Assert
         route.Should().NotBeNull();

@@ -2,5 +2,5 @@ namespace Dispatcher.Domain.Routing;
 
 public interface IRouteResolver
 {
-    RouteDefinition? Resolve(string path, string method);
+    Task<RouteDefinition?> ResolveAsync(string path, string method);
 }

@@ -41,6 +41,7 @@ public class LoggingTests : IClassFixture<WebApplicationFactory<Program>>
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/flights");
         request.Headers.Add("Authorization", "Bearer fake-token");
+        request.Headers.Add("Role", "User");
 
         // Act
         var response = await client.SendAsync(request);
