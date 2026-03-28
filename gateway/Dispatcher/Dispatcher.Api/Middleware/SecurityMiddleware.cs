@@ -13,14 +13,13 @@ public class SecurityMiddleware
 
     public async Task InvokeAsync(HttpContext context, IRouteResolver routeResolver)
     {
-        var path = context.Request.Path.Value;
+        var path = context.Request.Path.Value ?? string.Empty;
         var method = context.Request.Method;
 
-        var route = routeResolver.Resolve(path ?? string.Empty, method);
+        var route = await routeResolver.ResolveAsync(path, method);
 
         if (route is not null)
         {
-            // 401
             if (route.RequiresAuth && !HasAuthorizationHeader(context))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -28,7 +27,6 @@ public class SecurityMiddleware
                 return;
             }
 
-            // 403
             if (route.AllowedRoles.Any() && !IsUserInAllowedRoles(context, route.AllowedRoles))
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
