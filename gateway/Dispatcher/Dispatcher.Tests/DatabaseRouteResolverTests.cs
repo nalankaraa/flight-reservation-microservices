@@ -58,4 +58,18 @@ public class DatabaseRouteResolverTests
         // Assert
         result.Should().BeNull();
     }
+
+    [Fact]
+    public async Task ResolveAsync_Should_Return_Null_For_Empty_Path()
+    {
+        // Arrange
+        var repositoryMock = new Mock<IRouteRepository>();
+        var resolver = new DatabaseRouteResolver(repositoryMock.Object);
+
+        // Act
+        var result = await resolver.ResolveAsync(string.Empty, "GET");
+
+        // Assert
+        result.Should().BeNull();
+    }
 }

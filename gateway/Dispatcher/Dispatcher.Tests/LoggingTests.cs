@@ -1,8 +1,12 @@
 using Dispatcher.Application.Forwarding;
 using Dispatcher.Application.Logging;
+using Dispatcher.Domain.Routing;
+using Dispatcher.Infrastructure.Routing;
 using FluentAssertions;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
 namespace Dispatcher.Tests;
@@ -24,10 +28,14 @@ public class LoggingTests : IClassFixture<WebApplicationFactory<Program>>
 
         var client = _factory.WithWebHostBuilder(builder =>
         {
-            builder.ConfigureServices(services =>
+            builder.ConfigureTestServices(services =>
             {
+                services.RemoveAll<IRequestForwarder>();
+                services.RemoveAll<IRequestLogRepository>();
+                services.RemoveAll<IRouteResolver>();
                 services.AddSingleton<IRequestForwarder, FakeRequestForwarder>();
                 services.AddSingleton<IRequestLogRepository>(fakeLogRepository);
+                services.AddSingleton<IRouteResolver, InMemoryRouteResolver>();
             });
         }).CreateClient();
 
