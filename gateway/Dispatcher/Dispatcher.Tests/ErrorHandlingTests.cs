@@ -51,4 +51,31 @@ public class ErrorHandlingTests : IClassFixture<WebApplicationFactory<Program>>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadGateway);
     }
+    [Fact]
+    public async Task PostFlights_Should_Return502_When_Downstream_Service_Fails()
+    {
+        // Arrange
+        var client = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureServices(services =>
+            {
+                services.AddSingleton<IRequestForwarder, ThrowingRequestForwarder>();
+            });
+        }).CreateClient();
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/flights");
+        request.Headers.Add("Authorization", "Bearer fake-token");
+        request.Headers.Add("Role", "Admin");
+
+        request.Content = new StringContent(
+            "{\"from\":\"IST\",\"to\":\"ANK\"}",
+            System.Text.Encoding.UTF8,
+            "application/json");
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadGateway);
+    }
 }
