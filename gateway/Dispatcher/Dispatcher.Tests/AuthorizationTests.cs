@@ -23,6 +23,7 @@ public class AuthorizationTests : IClassFixture<WebApplicationFactory<Program>>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
     [Fact]
     public async Task PostFlights_Should_Return403_When_User_Is_Not_Admin()
     {
@@ -36,5 +37,49 @@ public class AuthorizationTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task PostFlights_Should_Not_Return403_When_User_Is_Admin()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/flights");
+        request.Headers.Add("Authorization", "Bearer fake-token");
+        request.Headers.Add("Role", "Admin");
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().NotBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task GetFlights_Should_Return401_When_AuthorizationHeader_Is_Empty()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/flights");
+       
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task GetFlights_Should_Not_Return403_For_User_Role()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/flights");
+        request.Headers.Add("Authorization", "Bearer fake-token");
+        request.Headers.Add("Role", "User");
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().NotBe(HttpStatusCode.Forbidden);
     }
 }
