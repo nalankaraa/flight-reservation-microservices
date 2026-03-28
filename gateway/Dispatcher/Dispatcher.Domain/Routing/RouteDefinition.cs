@@ -1,4 +1,5 @@
 namespace Dispatcher.Domain.Routing;
+
 public class RouteDefinition
 {
     public string Id { get; set; } = default!;

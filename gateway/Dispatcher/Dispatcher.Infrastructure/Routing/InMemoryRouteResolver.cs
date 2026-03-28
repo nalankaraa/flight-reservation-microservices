@@ -12,17 +12,23 @@ public class InMemoryRouteResolver : IRouteResolver
         {
             new RouteDefinition
             {
+                Id = Guid.NewGuid().ToString(),
                 PathPrefix = "/api/flights",
                 HttpMethod = "GET",
                 TargetServiceName = "FlightService",
-                TargetBaseUrl = "http://flightservice:5002"
+                TargetBaseUrl = "http://flightservice:5002",
+                RequiresAuth = true,
+                AllowedRoles = new List<string> { "Admin", "User" }
             },
             new RouteDefinition
             {
+                Id = Guid.NewGuid().ToString(),
                 PathPrefix = "/api/flights",
                 HttpMethod = "POST",
                 TargetServiceName = "FlightService",
-                TargetBaseUrl = "http://flightservice:5002"
+                TargetBaseUrl = "http://flightservice:5002",
+                RequiresAuth = true,
+                AllowedRoles = new List<string> { "Admin" }
             }
         };
     }
