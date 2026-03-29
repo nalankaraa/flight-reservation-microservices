@@ -17,10 +17,27 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
     {
+        if (string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Password) ||
+            string.IsNullOrWhiteSpace(request.Role))
+        {
+            return new AuthResponseDto
+            {
+                Success = false,
+                Message = "Email, password and role are required."
+            };
+        }
+
         var existingUser = await _repository.GetByEmailAsync(request.Email);
 
         if (existingUser != null)
-            throw new Exception("User already exists");
+        {
+            return new AuthResponseDto
+            {
+                Success = false,
+                Message = "User already exists."
+            };
+        }
 
         var user = new User
         {
@@ -35,22 +52,42 @@ public class AuthService : IAuthService
 
         return new AuthResponseDto
         {
-            Token = token
+            Success = true,
+            Token = token,
+            Message = "User registered successfully."
         };
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginRequestDto request)
     {
+        if (string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Password))
+        {
+            return new AuthResponseDto
+            {
+                Success = false,
+                Message = "Email and password are required."
+            };
+        }
+
         var user = await _repository.GetByEmailAsync(request.Email);
 
         if (user == null || user.Password != request.Password)
-            throw new Exception("Invalid credentials");
+        {
+            return new AuthResponseDto
+            {
+                Success = false,
+                Message = "Invalid credentials."
+            };
+        }
 
         var token = _tokenService.GenerateToken(user.Id, user.Email, user.Role);
 
         return new AuthResponseDto
         {
-            Token = token
+            Success = true,
+            Token = token,
+            Message = "Login successful."
         };
     }
 }

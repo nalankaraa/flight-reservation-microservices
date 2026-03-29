@@ -8,7 +8,6 @@ public class AuthServiceTests
     [Fact]
     public async Task Register_Should_Create_User_When_Email_Is_New()
     {
-        // Arrange
         var repository = new FakeUserRepository();
         var tokenService = new FakeTokenService();
         var service = new AuthService.Application.Services.AuthService(repository, tokenService);
@@ -20,18 +19,17 @@ public class AuthServiceTests
             Role = "User"
         };
 
-        // Act
         var result = await service.RegisterAsync(request);
 
-        // Assert
         result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        result.Token.Should().NotBeNullOrWhiteSpace();
         repository.Users.Should().ContainSingle(u => u.Email == "test@mail.com");
     }
 
     [Fact]
-    public async Task Register_Should_Throw_When_Email_Already_Exists()
+    public async Task Register_Should_Return_Failure_When_Email_Already_Exists()
     {
-        // Arrange
         var repository = new FakeUserRepository();
         var tokenService = new FakeTokenService();
         var service = new AuthService.Application.Services.AuthService(repository, tokenService);
@@ -43,22 +41,20 @@ public class AuthServiceTests
             Role = "User"
         });
 
-        // Act
-        var action = async () => await service.RegisterAsync(new AuthService.Application.Dtos.RegisterRequestDto
+        var result = await service.RegisterAsync(new AuthService.Application.Dtos.RegisterRequestDto
         {
             Email = "test@mail.com",
             Password = "123456",
             Role = "User"
         });
 
-        // Assert
-        await action.Should().ThrowAsync<Exception>();
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("User already exists.");
     }
 
     [Fact]
     public async Task Login_Should_Return_Token_When_Credentials_Are_Correct()
     {
-        // Arrange
         var repository = new FakeUserRepository();
         var tokenService = new FakeTokenService();
         var service = new AuthService.Application.Services.AuthService(repository, tokenService);
@@ -76,17 +72,15 @@ public class AuthServiceTests
             Password = "123456"
         };
 
-        // Act
         var result = await service.LoginAsync(login);
 
-        // Assert
+        result.Success.Should().BeTrue();
         result.Token.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
-    public async Task Login_Should_Throw_When_Password_Is_Wrong()
+    public async Task Login_Should_Return_Failure_When_Password_Is_Wrong()
     {
-        // Arrange
         var repository = new FakeUserRepository();
         var tokenService = new FakeTokenService();
         var service = new AuthService.Application.Services.AuthService(repository, tokenService);
@@ -104,10 +98,9 @@ public class AuthServiceTests
             Password = "wrong"
         };
 
-        // Act
-        var action = async () => await service.LoginAsync(login);
+        var result = await service.LoginAsync(login);
 
-        // Assert
-        await action.Should().ThrowAsync<Exception>();
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Invalid credentials.");
     }
 }
