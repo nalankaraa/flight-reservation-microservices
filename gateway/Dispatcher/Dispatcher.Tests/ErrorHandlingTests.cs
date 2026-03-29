@@ -7,11 +7,11 @@ using Xunit;
 
 namespace Dispatcher.Tests;
 
-public class ErrorHandlingTests : IClassFixture<WebApplicationFactory<Program>>
+public class ErrorHandlingTests : IClassFixture<DispatcherWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly DispatcherWebApplicationFactory _factory;
 
-    public ErrorHandlingTests(WebApplicationFactory<Program> factory)
+    public ErrorHandlingTests(DispatcherWebApplicationFactory factory)
     {
         _factory = factory;
     }
