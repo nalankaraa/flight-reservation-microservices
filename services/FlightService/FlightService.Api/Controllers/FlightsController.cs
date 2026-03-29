@@ -27,16 +27,42 @@ public class FlightsController : ControllerBase
     {
         var result = await _flightService.GetByIdAsync(id);
 
-        if (result is null)
+        if (result == null)
             return NotFound();
 
         return Ok(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateFlightDto request)
+    public async Task<IActionResult> Create([FromBody] CreateFlightDto request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var result = await _flightService.CreateAsync(request);
-        return Ok(result);
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(string id, UpdateFlightDto request)
+    {
+        var success = await _flightService.UpdateAsync(id, request);
+
+        if (!success)
+            return NotFound();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var success = await _flightService.DeleteAsync(id);
+
+        if (!success)
+            return NotFound();
+
+        return NoContent();
     }
 }

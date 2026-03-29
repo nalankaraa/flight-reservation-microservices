@@ -22,4 +22,27 @@ public class FakeFlightRepository : IFlightRepository
     {
         return Task.FromResult(Flights.ToList());
     }
+
+    public Task UpdateAsync(Flight flight)
+    {
+        var existing = Flights.FirstOrDefault(x => x.Id == flight.Id);
+
+        if (existing != null)
+        {
+            Flights.Remove(existing);
+            Flights.Add(flight);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(string id)
+    {
+        var existing = Flights.FirstOrDefault(x => x.Id == id);
+
+        if (existing != null)
+            Flights.Remove(existing);
+
+        return Task.CompletedTask;
+    }
 }

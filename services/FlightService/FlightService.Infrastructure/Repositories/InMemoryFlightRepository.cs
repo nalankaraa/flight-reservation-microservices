@@ -23,4 +23,27 @@ public class InMemoryFlightRepository : IFlightRepository
     {
         return Task.FromResult(_flights.ToList());
     }
+
+    public Task UpdateAsync(Flight flight)
+    {
+        var existing = _flights.FirstOrDefault(x => x.Id == flight.Id);
+
+        if (existing != null)
+        {
+            _flights.Remove(existing);
+            _flights.Add(flight);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(string id)
+    {
+        var flight = _flights.FirstOrDefault(x => x.Id == id);
+
+        if (flight != null)
+            _flights.Remove(flight);
+
+        return Task.CompletedTask;
+    }
 }

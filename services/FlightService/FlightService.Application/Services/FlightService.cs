@@ -46,6 +46,37 @@ public class FlightService : IFlightService
         return flights.Select(MapToDto).ToList();
     }
 
+    public async Task<bool> UpdateAsync(string id, UpdateFlightDto request)
+    {
+        var existing = await _repository.GetByIdAsync(id);
+
+        if (existing == null)
+            return false;
+
+        existing.From = request.From;
+        existing.To = request.To;
+        existing.DepartureTime = request.DepartureTime;
+        existing.ArrivalTime = request.ArrivalTime;
+        existing.Price = request.Price;
+        existing.AvailableSeatCount = request.AvailableSeatCount;
+
+        await _repository.UpdateAsync(existing);
+
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(string id)
+    {
+        var existing = await _repository.GetByIdAsync(id);
+
+        if (existing == null)
+            return false;
+
+        await _repository.DeleteAsync(id);
+
+        return true;
+    }
+
     private static FlightResponseDto MapToDto(Flight flight)
     {
         return new FlightResponseDto
