@@ -9,7 +9,6 @@ public class FlightServiceTests
     [Fact]
     public async Task CreateAsync_Should_Create_Flight()
     {
-        // Arrange
         var repository = new FakeFlightRepository();
         var service = new FlightService.Application.Services.FlightService(repository);
 
@@ -23,10 +22,8 @@ public class FlightServiceTests
             AvailableSeatCount = 50
         };
 
-        // Act
         var result = await service.CreateAsync(request);
 
-        // Assert
         result.Should().NotBeNull();
         result.From.Should().Be("IST");
         result.To.Should().Be("ANK");
@@ -36,7 +33,6 @@ public class FlightServiceTests
     [Fact]
     public async Task GetByIdAsync_Should_Return_Flight_When_Id_Exists()
     {
-        // Arrange
         var repository = new FakeFlightRepository();
         var service = new FlightService.Application.Services.FlightService(repository);
 
@@ -50,10 +46,8 @@ public class FlightServiceTests
             AvailableSeatCount = 50
         });
 
-        // Act
         var result = await service.GetByIdAsync(created.Id);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(created.Id);
     }
@@ -61,7 +55,6 @@ public class FlightServiceTests
     [Fact]
     public async Task GetAllAsync_Should_Return_All_Flights()
     {
-        // Arrange
         var repository = new FakeFlightRepository();
         var service = new FlightService.Application.Services.FlightService(repository);
 
@@ -85,10 +78,8 @@ public class FlightServiceTests
             AvailableSeatCount = 40
         });
 
-        // Act
         var result = await service.GetAllAsync();
 
-        // Assert
         result.Should().HaveCount(2);
     }
 }
