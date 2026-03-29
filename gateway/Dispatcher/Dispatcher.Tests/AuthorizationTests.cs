@@ -5,11 +5,11 @@ using Xunit;
 
 namespace Dispatcher.Tests;
 
-public class AuthorizationTests : IClassFixture<WebApplicationFactory<Program>>
+public class AuthorizationTests : IClassFixture<DispatcherWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public AuthorizationTests(WebApplicationFactory<Program> factory)
+    public AuthorizationTests(DispatcherWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }

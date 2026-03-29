@@ -11,11 +11,11 @@ using Xunit;
 
 namespace Dispatcher.Tests;
 
-public class LoggingTests : IClassFixture<WebApplicationFactory<Program>>
+public class LoggingTests : IClassFixture<DispatcherWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly DispatcherWebApplicationFactory _factory;
 
-    public LoggingTests(WebApplicationFactory<Program> factory)
+    public LoggingTests(DispatcherWebApplicationFactory factory)
     {
         _factory = factory;
     }
