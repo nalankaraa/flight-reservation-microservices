@@ -36,6 +36,12 @@ public class AvailabilityService : IAvailabilityService
         if (hold is null)
             return null;
 
+        if (IsExpired(hold))
+        {
+            hold.Status = "Expired";
+            await _repository.UpdateAsync(hold);
+        }
+
         return MapToDto(hold);
     }
 
@@ -44,6 +50,16 @@ public class AvailabilityService : IAvailabilityService
         var hold = await _repository.GetByIdAsync(id);
 
         if (hold is null)
+            return false;
+
+        if (IsExpired(hold))
+        {
+            hold.Status = "Expired";
+            await _repository.UpdateAsync(hold);
+            return false;
+        }
+
+        if (hold.Status != "Pending")
             return false;
 
         hold.Status = "Confirmed";
@@ -59,10 +75,25 @@ public class AvailabilityService : IAvailabilityService
         if (hold is null)
             return false;
 
+        if (IsExpired(hold))
+        {
+            hold.Status = "Expired";
+            await _repository.UpdateAsync(hold);
+            return false;
+        }
+
+        if (hold.Status != "Pending")
+            return false;
+
         hold.Status = "Cancelled";
         await _repository.UpdateAsync(hold);
 
         return true;
+    }
+
+    private static bool IsExpired(SeatHold hold)
+    {
+        return hold.ReservedUntilUtc <= DateTime.UtcNow;
     }
 
     private static SeatHoldResponseDto MapToDto(SeatHold hold)

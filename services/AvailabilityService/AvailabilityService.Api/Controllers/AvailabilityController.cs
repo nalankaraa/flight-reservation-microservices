@@ -16,10 +16,14 @@ public class AvailabilityController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateHold(CreateSeatHoldDto request)
+    public async Task<IActionResult> CreateHold([FromBody] CreateSeatHoldDto request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var result = await _availabilityService.CreateHoldAsync(request);
-        return Ok(result);
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpGet("{id}")]
@@ -39,7 +43,7 @@ public class AvailabilityController : ControllerBase
         var success = await _availabilityService.ConfirmHoldAsync(id);
 
         if (!success)
-            return NotFound();
+            return BadRequest("Hold cannot be confirmed.");
 
         return NoContent();
     }
@@ -50,7 +54,7 @@ public class AvailabilityController : ControllerBase
         var success = await _availabilityService.CancelHoldAsync(id);
 
         if (!success)
-            return NotFound();
+            return BadRequest("Hold cannot be cancelled.");
 
         return NoContent();
     }

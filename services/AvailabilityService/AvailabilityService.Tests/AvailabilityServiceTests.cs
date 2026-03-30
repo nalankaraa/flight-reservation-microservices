@@ -119,4 +119,31 @@ public class AvailabilityServiceTests
         updated.Should().NotBeNull();
         updated!.Status.Should().Be("Cancelled");
     }
+
+    [Fact]
+    public async Task GetHoldByIdAsync_Should_Mark_Hold_As_Expired_When_Time_Has_Passed()
+    {
+        // Arrange
+        var repository = new FakeSeatHoldRepository();
+        var service = new AvailabilityService.Application.Services.AvailabilityService(repository);
+
+        var result = await service.CreateHoldAsync(new CreateSeatHoldDto
+        {
+            FlightId = "flight-1",
+            UserId = "user-1",
+            SeatCount = 1,
+            HoldMinutes = 1
+        });
+
+        var hold = await repository.GetByIdAsync(result.Id);
+        hold!.ReservedUntilUtc = DateTime.UtcNow.AddMinutes(-1);
+        await repository.UpdateAsync(hold);
+
+        // Act
+        var expired = await service.GetHoldByIdAsync(result.Id);
+
+        // Assert
+        expired.Should().NotBeNull();
+        expired!.Status.Should().Be("Expired");
+    }
 }
