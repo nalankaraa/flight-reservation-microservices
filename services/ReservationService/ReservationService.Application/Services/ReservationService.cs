@@ -1,5 +1,6 @@
 using ReservationService.Application.Dtos;
 using ReservationService.Application.Repositories;
+using ReservationService.Domain.Entities;
 
 namespace ReservationService.Application.Services;
 
@@ -12,15 +13,37 @@ public class ReservationService : IReservationService
         _repository = repository;
     }
 
-    public Task<ReservationResponseDto> CreateAsync(CreateReservationDto request)
+    public async Task<ReservationResponseDto> CreateAsync(CreateReservationDto request)
     {
-        
-        return Task.FromResult(new ReservationResponseDto());
+        var reservation = new Reservation
+        {
+            Id = Guid.NewGuid().ToString(),
+            FlightId = request.FlightId,
+            PassengerName = request.PassengerName,
+            SeatNumber = request.SeatNumber
+        };
+
+        await _repository.AddAsync(reservation);
+
+        return new ReservationResponseDto
+        {
+            Id = reservation.Id,
+            FlightId = reservation.FlightId,
+            PassengerName = reservation.PassengerName,
+            SeatNumber = reservation.SeatNumber
+        };
     }
 
-    public Task<List<ReservationResponseDto>> GetAllAsync()
+    public async Task<List<ReservationResponseDto>> GetAllAsync()
     {
-        
-        return Task.FromResult(new List<ReservationResponseDto>());
+        var reservations = await _repository.GetAllAsync();
+
+        return reservations.Select(r => new ReservationResponseDto
+        {
+            Id = r.Id,
+            FlightId = r.FlightId,
+            PassengerName = r.PassengerName,
+            SeatNumber = r.SeatNumber
+        }).ToList();
     }
 }
