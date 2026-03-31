@@ -110,4 +110,48 @@ public class PaymentServiceTests
         updated.Should().NotBeNull();
         updated!.Status.Should().Be("Failed");
     }
+
+    [Fact]
+    public async Task CompleteAsync_Should_Return_False_When_Payment_Is_Already_Completed()
+    {
+        // Arrange
+        var repository = new FakePaymentRepository();
+        var service = new PaymentService.Application.Services.PaymentService(repository);
+
+        var created = await service.CreateAsync(new CreatePaymentDto
+        {
+            ReservationId = "reservation-1",
+            Amount = 2500
+        });
+
+        await service.CompleteAsync(created.Id);
+
+        // Act
+        var secondAttempt = await service.CompleteAsync(created.Id);
+
+        // Assert
+        secondAttempt.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task FailAsync_Should_Return_False_When_Payment_Is_Already_Completed()
+    {
+        // Arrange
+        var repository = new FakePaymentRepository();
+        var service = new PaymentService.Application.Services.PaymentService(repository);
+
+        var created = await service.CreateAsync(new CreatePaymentDto
+        {
+            ReservationId = "reservation-1",
+            Amount = 2500
+        });
+
+        await service.CompleteAsync(created.Id);
+
+        // Act
+        var failAttempt = await service.FailAsync(created.Id);
+
+        // Assert
+        failAttempt.Should().BeFalse();
+    }
 }

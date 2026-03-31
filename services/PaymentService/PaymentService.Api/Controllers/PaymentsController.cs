@@ -16,10 +16,14 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreatePaymentDto request)
+    public async Task<IActionResult> Create([FromBody] CreatePaymentDto request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var result = await _paymentService.CreateAsync(request);
-        return Ok(result);
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpGet("{id}")]
@@ -39,7 +43,7 @@ public class PaymentsController : ControllerBase
         var success = await _paymentService.CompleteAsync(id);
 
         if (!success)
-            return NotFound();
+            return BadRequest("Payment cannot be completed.");
 
         return NoContent();
     }
@@ -50,7 +54,7 @@ public class PaymentsController : ControllerBase
         var success = await _paymentService.FailAsync(id);
 
         if (!success)
-            return NotFound();
+            return BadRequest("Payment cannot be failed.");
 
         return NoContent();
     }

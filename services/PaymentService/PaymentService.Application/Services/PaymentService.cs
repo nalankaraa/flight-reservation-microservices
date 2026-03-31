@@ -45,6 +45,9 @@ public class PaymentService : IPaymentService
         if (payment is null)
             return false;
 
+        if (payment.Status != "Pending")
+            return false;
+
         payment.Status = "Completed";
         await _repository.UpdateAsync(payment);
 
@@ -56,6 +59,9 @@ public class PaymentService : IPaymentService
         var payment = await _repository.GetByIdAsync(id);
 
         if (payment is null)
+            return false;
+
+        if (payment.Status != "Pending")
             return false;
 
         payment.Status = "Failed";
