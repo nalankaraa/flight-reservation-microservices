@@ -15,6 +15,17 @@ public class ReservationService : IReservationService
 
     public async Task<ReservationResponseDto> CreateAsync(CreateReservationDto request)
     {
+        if (string.IsNullOrWhiteSpace(request.FlightId) ||
+            string.IsNullOrWhiteSpace(request.PassengerName) ||
+            string.IsNullOrWhiteSpace(request.SeatNumber))
+        {
+            return new ReservationResponseDto
+            {
+                Success = false,
+                Message = "FlightId, PassengerName and SeatNumber are required."
+            };
+        }
+
         var reservation = new Reservation
         {
             Id = Guid.NewGuid().ToString(),
@@ -27,10 +38,12 @@ public class ReservationService : IReservationService
 
         return new ReservationResponseDto
         {
+            Success = true,
             Id = reservation.Id,
             FlightId = reservation.FlightId,
             PassengerName = reservation.PassengerName,
-            SeatNumber = reservation.SeatNumber
+            SeatNumber = reservation.SeatNumber,
+            Message = "Reservation created successfully."
         };
     }
 
@@ -40,6 +53,7 @@ public class ReservationService : IReservationService
 
         return reservations.Select(r => new ReservationResponseDto
         {
+            Success = true,
             Id = r.Id,
             FlightId = r.FlightId,
             PassengerName = r.PassengerName,
