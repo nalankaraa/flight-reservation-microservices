@@ -21,7 +21,10 @@ public class InMemoryNotificationRepository : INotificationRepository
 
     public Task<List<Notification>> GetByUserIdAsync(string userId)
     {
-        var notifications = _notifications.Where(x => x.UserId == userId).ToList();
+        var notifications = _notifications
+            .Where(x => x.UserId == userId)
+            .ToList();
+
         return Task.FromResult(notifications);
     }
 
@@ -29,10 +32,15 @@ public class InMemoryNotificationRepository : INotificationRepository
     {
         var existing = _notifications.FirstOrDefault(x => x.Id == notification.Id);
 
-        if (existing != null)
+        if (existing is not null)
         {
-            _notifications.Remove(existing);
-            _notifications.Add(notification);
+            existing.UserId = notification.UserId;
+            existing.Title = notification.Title;
+            existing.Message = notification.Message;
+            existing.Type = notification.Type;
+            existing.CreatedAtUtc = notification.CreatedAtUtc;
+            existing.IsRead = notification.IsRead;
+            existing.IsSent = notification.IsSent;
         }
 
         return Task.CompletedTask;

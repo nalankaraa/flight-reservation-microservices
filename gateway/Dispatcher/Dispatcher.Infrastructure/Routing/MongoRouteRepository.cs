@@ -22,9 +22,18 @@ public class MongoRouteRepository : IRouteRepository
 
         var all = await _collection.Find(_ => true).ToListAsync();
 
-        var match = all.FirstOrDefault(r =>
-            r.PathPrefix.Equals(path, StringComparison.OrdinalIgnoreCase) &&
-            r.HttpMethod.Equals(method, StringComparison.OrdinalIgnoreCase));
+        var normalizedPath = path.TrimEnd('/');
+
+        var match = all
+            .Where(r => r.HttpMethod.Equals(method, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(r => r.PathPrefix.Length)
+            .FirstOrDefault(r =>
+            {
+                var prefix = r.PathPrefix.TrimEnd('/');
+
+                return normalizedPath.Equals(prefix, StringComparison.OrdinalIgnoreCase)
+                       || normalizedPath.StartsWith(prefix + "/", StringComparison.OrdinalIgnoreCase);
+            });
 
         return match is null ? null : MapToDomain(match);
     }

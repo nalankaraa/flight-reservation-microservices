@@ -27,7 +27,7 @@ public class RouteSeedService
             TargetServiceName = "FlightService",
             TargetBaseUrl = "http://flightservice:5002",
             RequiresAuth = true,
-            AllowedRoles = new List<string>()
+            AllowedRoles = new List<string> { "Admin", "User" }
         });
 
         await _routeRepository.AddRouteAsync(new RouteDefinition
@@ -39,6 +39,28 @@ public class RouteSeedService
             TargetBaseUrl = "http://flightservice:5002",
             RequiresAuth = true,
             AllowedRoles = new List<string> { "Admin" }
+        });
+
+        await _routeRepository.AddRouteAsync(new RouteDefinition
+        {
+            Id = Guid.NewGuid().ToString(),
+            PathPrefix = "/api/notifications",
+            HttpMethod = "GET",
+            TargetServiceName = "NotificationService",
+            TargetBaseUrl = "http://localhost:5179",
+            RequiresAuth = true,
+            AllowedRoles = new List<string> { "Admin", "User" }
+        });
+
+        await _routeRepository.AddRouteAsync(new RouteDefinition
+        {
+            Id = Guid.NewGuid().ToString(),
+            PathPrefix = "/api/notifications",
+            HttpMethod = "POST",
+            TargetServiceName = "NotificationService",
+            TargetBaseUrl = "http://localhost:5179",
+            RequiresAuth = true,
+            AllowedRoles = new List<string> { "Admin", "User" }
         });
     }
 }
