@@ -1,40 +1,27 @@
 using NotificationService.Application.Repositories;
-using NotificationService.Domain.Entities;
+using NotificationService.Application.Services;
+using NotificationService.Infrastructure.Repositories;
 
-namespace NotificationService.Infrastructure.Repositories;
+var builder = WebApplication.CreateBuilder(args);
 
-public class InMemoryNotificationRepository : INotificationRepository
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<INotificationRepository, InMemoryNotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService.Application.Services.NotificationService>();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
 {
-    private readonly List<Notification> _notifications = new();
-
-    public Task AddAsync(Notification notification)
-    {
-        _notifications.Add(notification);
-        return Task.CompletedTask;
-    }
-
-    public Task<Notification?> GetByIdAsync(string id)
-    {
-        var notification = _notifications.FirstOrDefault(x => x.Id == id);
-        return Task.FromResult(notification);
-    }
-
-    public Task<List<Notification>> GetByUserIdAsync(string userId)
-    {
-        var notifications = _notifications.Where(x => x.UserId == userId).ToList();
-        return Task.FromResult(notifications);
-    }
-
-    public Task UpdateAsync(Notification notification)
-    {
-        var existing = _notifications.FirstOrDefault(x => x.Id == notification.Id);
-
-        if (existing != null)
-        {
-            _notifications.Remove(existing);
-            _notifications.Add(notification);
-        }
-
-        return Task.CompletedTask;
-    }
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
+
+app.MapControllers();
+
+app.Run();

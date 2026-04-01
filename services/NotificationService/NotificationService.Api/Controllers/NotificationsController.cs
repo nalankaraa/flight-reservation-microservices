@@ -5,7 +5,7 @@ using NotificationService.Application.Services;
 namespace NotificationService.Api.Controllers;
 
 [ApiController]
-[Route("api/notifications")]
+[Route("api/[controller]")]
 public class NotificationsController : ControllerBase
 {
     private readonly INotificationService _notificationService;
@@ -18,11 +18,7 @@ public class NotificationsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateNotificationDto request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
         var result = await _notificationService.CreateAsync(request);
-
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -50,9 +46,9 @@ public class NotificationsController : ControllerBase
         var success = await _notificationService.SendAsync(id);
 
         if (!success)
-            return BadRequest("Notification cannot be sent.");
+            return NotFound();
 
-        return NoContent();
+        return Ok(new { message = "Notification marked as sent." });
     }
 
     [HttpPost("{id}/read")]
@@ -61,8 +57,8 @@ public class NotificationsController : ControllerBase
         var success = await _notificationService.MarkAsReadAsync(id);
 
         if (!success)
-            return BadRequest("Notification cannot be marked as read.");
+            return NotFound();
 
-        return NoContent();
+        return Ok(new { message = "Notification marked as read." });
     }
 }
