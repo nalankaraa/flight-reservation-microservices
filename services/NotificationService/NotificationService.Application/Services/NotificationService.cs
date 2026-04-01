@@ -44,7 +44,10 @@ public class NotificationService : INotificationService
     public async Task<List<NotificationResponseDto>> GetByUserIdAsync(string userId)
     {
         var notifications = await _repository.GetByUserIdAsync(userId);
-        return notifications.Select(MapToDto).ToList();
+        return notifications
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Select(MapToDto)
+            .ToList();
     }
 
     public async Task<bool> SendAsync(string id)
@@ -54,7 +57,26 @@ public class NotificationService : INotificationService
         if (notification is null)
             return false;
 
+        if (notification.IsSent)
+            return false;
+
         notification.IsSent = true;
+        await _repository.UpdateAsync(notification);
+
+        return true;
+    }
+
+    public async Task<bool> MarkAsReadAsync(string id)
+    {
+        var notification = await _repository.GetByIdAsync(id);
+
+        if (notification is null)
+            return false;
+
+        if (notification.IsRead)
+            return false;
+
+        notification.IsRead = true;
         await _repository.UpdateAsync(notification);
 
         return true;

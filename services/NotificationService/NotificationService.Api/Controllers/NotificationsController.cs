@@ -16,10 +16,14 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateNotificationDto request)
+    public async Task<IActionResult> Create([FromBody] CreateNotificationDto request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var result = await _notificationService.CreateAsync(request);
-        return Ok(result);
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpGet("{id}")]
@@ -46,7 +50,18 @@ public class NotificationsController : ControllerBase
         var success = await _notificationService.SendAsync(id);
 
         if (!success)
-            return NotFound();
+            return BadRequest("Notification cannot be sent.");
+
+        return NoContent();
+    }
+
+    [HttpPost("{id}/read")]
+    public async Task<IActionResult> MarkAsRead(string id)
+    {
+        var success = await _notificationService.MarkAsReadAsync(id);
+
+        if (!success)
+            return BadRequest("Notification cannot be marked as read.");
 
         return NoContent();
     }
