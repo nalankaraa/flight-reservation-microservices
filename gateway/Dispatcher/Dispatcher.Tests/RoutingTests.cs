@@ -20,6 +20,6 @@ public class RoutingTests
         route!.PathPrefix.Should().Be("/api/flights");
         route.HttpMethod.Should().Be("GET");
         route.TargetServiceName.Should().Be("FlightService");
-        route.TargetBaseUrl.Should().Be("http://flightservice:5002");
+        route.TargetBaseUrl.Should().Be("http://localhost:5162");
     }
 }

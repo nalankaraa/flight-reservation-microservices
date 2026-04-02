@@ -29,8 +29,7 @@ public class AuthorizationTests : IClassFixture<DispatcherWebApplicationFactory>
     {
         // Arrange
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/flights");
-        request.Headers.Add("Authorization", "Bearer fake-token");
-        request.Headers.Add("Role", "User");
+        request.Headers.Add("Authorization", $"Bearer {JwtTestTokenFactory.CreateToken("Customer")}");
 
         // Act
         var response = await _client.SendAsync(request);
@@ -44,8 +43,7 @@ public class AuthorizationTests : IClassFixture<DispatcherWebApplicationFactory>
     {
         // Arrange
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/flights");
-        request.Headers.Add("Authorization", "Bearer fake-token");
-        request.Headers.Add("Role", "Admin");
+        request.Headers.Add("Authorization", $"Bearer {JwtTestTokenFactory.CreateToken("Admin")}");
 
         // Act
         var response = await _client.SendAsync(request);
@@ -73,8 +71,7 @@ public class AuthorizationTests : IClassFixture<DispatcherWebApplicationFactory>
     {
         // Arrange
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/flights");
-        request.Headers.Add("Authorization", "Bearer fake-token");
-        request.Headers.Add("Role", "User");
+        request.Headers.Add("Authorization", $"Bearer {JwtTestTokenFactory.CreateToken("Customer")}");
 
         // Act
         var response = await _client.SendAsync(request);

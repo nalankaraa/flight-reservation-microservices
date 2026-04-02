@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Dispatcher.Api.Controllers;
 
 [ApiController]
-[Route("api")]
+[Route("api/{**catchAll}")]
 public class GatewayController : ControllerBase
 {
     private readonly IRequestForwarder _requestForwarder;
@@ -17,16 +17,10 @@ public class GatewayController : ControllerBase
         _routeResolver = routeResolver;
     }
 
-    [HttpGet("flights")]
-    public async Task<IActionResult> GetFlights()
+    [AcceptVerbs("GET", "POST", "PUT", "PATCH", "DELETE")]
+    public async Task<IActionResult> Proxy(string catchAll)
     {
-        return await ForwardRequest("/api/flights", "GET");
-    }
-
-    [HttpPost("flights")]
-    public async Task<IActionResult> PostFlights()
-    {
-        return await ForwardRequest("/api/flights", "POST");
+        return await ForwardRequest($"/api/{catchAll}", Request.Method);
     }
 
     private async Task<IActionResult> ForwardRequest(string path, string method)
@@ -37,12 +31,13 @@ public class GatewayController : ControllerBase
             return NotFound();
 
         var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
+        var queryString = Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty;
 
         try
         {
             var response = await _requestForwarder.ForwardAsync(
                 method,
-                route.TargetBaseUrl + path,
+                route.TargetBaseUrl.TrimEnd('/') + path + queryString,
                 headers,
                 Request.Body
             );
@@ -59,6 +54,10 @@ public class GatewayController : ControllerBase
         catch (HttpRequestException)
         {
             return StatusCode(StatusCodes.Status502BadGateway, "Bad Gateway");
+        }
+        catch (TaskCanceledException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Service Unavailable");
         }
     }
 }
