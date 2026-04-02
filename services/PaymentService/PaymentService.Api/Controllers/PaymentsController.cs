@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using PaymentService.Application.Dtos;
 using PaymentService.Application.Services;
 
@@ -6,6 +7,7 @@ namespace PaymentService.Api.Controllers;
 
 [ApiController]
 [Route("api/payments")]
+[Authorize]
 public class PaymentsController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
@@ -16,6 +18,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Create([FromBody] CreatePaymentDto request)
     {
         if (!ModelState.IsValid)
@@ -27,6 +30,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> GetById(string id)
     {
         var result = await _paymentService.GetByIdAsync(id);
@@ -38,6 +42,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost("{id}/complete")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Complete(string id)
     {
         var success = await _paymentService.CompleteAsync(id);
@@ -49,6 +54,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost("{id}/fail")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Fail(string id)
     {
         var success = await _paymentService.FailAsync(id);

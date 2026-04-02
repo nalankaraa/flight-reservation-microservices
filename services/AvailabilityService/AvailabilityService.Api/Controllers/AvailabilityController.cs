@@ -1,11 +1,13 @@
 using AvailabilityService.Application.Dtos;
 using AvailabilityService.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AvailabilityService.Api.Controllers;
 
 [ApiController]
 [Route("api/availability/holds")]
+[Authorize]
 public class AvailabilityController : ControllerBase
 {
     private readonly IAvailabilityService _availabilityService;
@@ -16,6 +18,7 @@ public class AvailabilityController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> CreateHold([FromBody] CreateSeatHoldDto request)
     {
         if (!ModelState.IsValid)
@@ -27,6 +30,7 @@ public class AvailabilityController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> GetById(string id)
     {
         var result = await _availabilityService.GetHoldByIdAsync(id);
@@ -38,6 +42,7 @@ public class AvailabilityController : ControllerBase
     }
 
     [HttpPost("{id}/confirm")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Confirm(string id)
     {
         var success = await _availabilityService.ConfirmHoldAsync(id);
@@ -49,6 +54,7 @@ public class AvailabilityController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Cancel(string id)
     {
         var success = await _availabilityService.CancelHoldAsync(id);
