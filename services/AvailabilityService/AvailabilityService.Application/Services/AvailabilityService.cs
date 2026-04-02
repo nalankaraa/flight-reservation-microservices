@@ -13,99 +13,115 @@ public class AvailabilityService : IAvailabilityService
         _repository = repository;
     }
 
-    public async Task<SeatHoldResponseDto> CreateHoldAsync(CreateSeatHoldDto request)
+    public async Task<FlightAvailabilityDto> GetAvailabilityAsync(string flightId)
     {
+        var seats = await GetSeatAvailabilityInternalAsync(flightId);
+
+        return new FlightAvailabilityDto
+        {
+            FlightId = flightId,
+            TotalTrackedSeats = seats.Count,
+            AvailableSeats = seats.Count(x => x.IsAvailable),
+            LockedSeats = seats.Count(x => !x.IsAvailable)
+        };
+    }
+
+    public Task<List<SeatAvailabilityDto>> GetSeatsAsync(string flightId)
+    {
+        return GetSeatAvailabilityInternalAsync(flightId);
+    }
+
+    public async Task<SeatAvailabilityDto?> LockSeatAsync(string flightId, LockSeatRequestDto request, string userId)
+    {
+        var nowUtc = DateTime.UtcNow;
         var hold = new SeatHold
         {
-            FlightId = request.FlightId,
-            UserId = request.UserId,
-            SeatCount = request.SeatCount,
-            ReservedUntilUtc = DateTime.UtcNow.AddMinutes(request.HoldMinutes),
-            Status = "Pending"
+            Id = BuildId(flightId, request.SeatNumber),
+            FlightId = flightId,
+            SeatNumber = NormalizeSeatNumber(request.SeatNumber),
+            UserId = userId,
+            ReservedUntilUtc = nowUtc.AddMinutes(request.HoldMinutes),
+            Status = "Locked",
+            LastUpdatedUtc = nowUtc
         };
 
-        await _repository.AddAsync(hold);
-
-        return MapToDto(hold);
+        var locked = await _repository.TryLockSeatAsync(hold, nowUtc);
+        return locked is null ? null : MapToSeatAvailability(locked, nowUtc);
     }
 
-    public async Task<SeatHoldResponseDto?> GetHoldByIdAsync(string id)
+    public async Task<SeatAvailabilityDto?> ConfirmSeatAsync(string flightId, string seatNumber, string userId)
     {
-        var hold = await _repository.GetByIdAsync(id);
-
-        if (hold is null)
+        if (string.IsNullOrWhiteSpace(seatNumber))
             return null;
 
-        if (IsExpired(hold))
+        var nowUtc = DateTime.UtcNow;
+        var confirmed = await _repository.ConfirmSeatAsync(flightId, seatNumber, userId, nowUtc);
+        return confirmed is null ? null : MapToSeatAvailability(confirmed, nowUtc);
+    }
+
+    public Task<bool> ReleaseSeatAsync(string flightId, ReleaseSeatRequestDto request, string userId, bool allowAnyUser)
+    {
+        return _repository.ReleaseSeatAsync(
+            flightId,
+            request.SeatNumber,
+            userId,
+            allowAnyUser,
+            DateTime.UtcNow);
+    }
+
+    private async Task<List<SeatAvailabilityDto>> GetSeatAvailabilityInternalAsync(string flightId)
+    {
+        var nowUtc = DateTime.UtcNow;
+        var seats = await _repository.GetByFlightIdAsync(flightId);
+        var result = new List<SeatAvailabilityDto>(seats.Count);
+
+        foreach (var seat in seats)
         {
-            hold.Status = "Expired";
-            await _repository.UpdateAsync(hold);
+            if (IsExpired(seat, nowUtc))
+            {
+                seat.Status = "Expired";
+                seat.LastUpdatedUtc = nowUtc;
+                await _repository.UpdateAsync(seat);
+            }
+
+            result.Add(MapToSeatAvailability(seat, nowUtc));
         }
 
-        return MapToDto(hold);
+        return result
+            .OrderBy(x => x.SeatNumber, StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
-    public async Task<bool> ConfirmHoldAsync(string id)
+    private static bool IsExpired(SeatHold hold, DateTime nowUtc)
     {
-        var hold = await _repository.GetByIdAsync(id);
+        return hold.Status == "Locked" && hold.ReservedUntilUtc <= nowUtc;
+    }
 
-        if (hold is null)
-            return false;
+    private static SeatAvailabilityDto MapToSeatAvailability(SeatHold hold, DateTime nowUtc)
+    {
+        var isAvailable =
+            hold.Status == "Expired" ||
+            hold.Status == "Released" ||
+            (hold.Status == "Locked" && hold.ReservedUntilUtc <= nowUtc);
 
-        if (IsExpired(hold))
+        return new SeatAvailabilityDto
         {
-            hold.Status = "Expired";
-            await _repository.UpdateAsync(hold);
-            return false;
-        }
-
-        if (hold.Status != "Pending")
-            return false;
-
-        hold.Status = "Confirmed";
-        await _repository.UpdateAsync(hold);
-
-        return true;
-    }
-
-    public async Task<bool> CancelHoldAsync(string id)
-    {
-        var hold = await _repository.GetByIdAsync(id);
-
-        if (hold is null)
-            return false;
-
-        if (IsExpired(hold))
-        {
-            hold.Status = "Expired";
-            await _repository.UpdateAsync(hold);
-            return false;
-        }
-
-        if (hold.Status != "Pending")
-            return false;
-
-        hold.Status = "Cancelled";
-        await _repository.UpdateAsync(hold);
-
-        return true;
-    }
-
-    private static bool IsExpired(SeatHold hold)
-    {
-        return hold.ReservedUntilUtc <= DateTime.UtcNow;
-    }
-
-    private static SeatHoldResponseDto MapToDto(SeatHold hold)
-    {
-        return new SeatHoldResponseDto
-        {
-            Id = hold.Id,
             FlightId = hold.FlightId,
-            UserId = hold.UserId,
-            SeatCount = hold.SeatCount,
-            ReservedUntilUtc = hold.ReservedUntilUtc,
-            Status = hold.Status
+            SeatNumber = hold.SeatNumber,
+            UserId = isAvailable ? null : hold.UserId,
+            IsAvailable = isAvailable,
+            ReservedUntilUtc = hold.Status == "Reserved" || isAvailable ? null : hold.ReservedUntilUtc,
+            Status = isAvailable ? "Available" : hold.Status
         };
+    }
+
+    private static string NormalizeSeatNumber(string seatNumber)
+    {
+        return seatNumber.Trim().ToUpperInvariant();
+    }
+
+    private static string BuildId(string flightId, string seatNumber)
+    {
+        return $"{flightId.Trim()}::{NormalizeSeatNumber(seatNumber)}";
     }
 }
