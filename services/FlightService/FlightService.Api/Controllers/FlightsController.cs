@@ -1,11 +1,13 @@
 using FlightService.Application.Dtos;
 using FlightService.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlightService.Api.Controllers;
 
 [ApiController]
 [Route("api/flights")]
+[Authorize]
 public class FlightsController : ControllerBase
 {
     private readonly IFlightService _flightService;
@@ -16,6 +18,7 @@ public class FlightsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> GetAll()
     {
         var result = await _flightService.GetAllAsync();
@@ -23,6 +26,7 @@ public class FlightsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> GetById(string id)
     {
         var result = await _flightService.GetByIdAsync(id);
@@ -34,6 +38,7 @@ public class FlightsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateFlightDto request)
     {
         if (!ModelState.IsValid)
@@ -45,6 +50,7 @@ public class FlightsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(string id, UpdateFlightDto request)
     {
         var success = await _flightService.UpdateAsync(id, request);
@@ -56,6 +62,7 @@ public class FlightsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(string id)
     {
         var success = await _flightService.DeleteAsync(id);

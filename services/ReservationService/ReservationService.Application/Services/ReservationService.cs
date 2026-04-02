@@ -13,9 +13,10 @@ public class ReservationService : IReservationService
         _repository = repository;
     }
 
-    public async Task<ReservationResponseDto> CreateAsync(CreateReservationDto request)
+    public async Task<ReservationResponseDto> CreateAsync(CreateReservationDto request, string userId)
     {
-        if (string.IsNullOrWhiteSpace(request.FlightId) ||
+        if (string.IsNullOrWhiteSpace(userId) ||
+            string.IsNullOrWhiteSpace(request.FlightId) ||
             string.IsNullOrWhiteSpace(request.PassengerName) ||
             string.IsNullOrWhiteSpace(request.SeatNumber))
         {
@@ -29,6 +30,7 @@ public class ReservationService : IReservationService
         var reservation = new Reservation
         {
             Id = Guid.NewGuid().ToString(),
+            UserId = userId,
             FlightId = request.FlightId,
             PassengerName = request.PassengerName,
             SeatNumber = request.SeatNumber
@@ -40,6 +42,7 @@ public class ReservationService : IReservationService
         {
             Success = true,
             Id = reservation.Id,
+            UserId = reservation.UserId,
             FlightId = reservation.FlightId,
             PassengerName = reservation.PassengerName,
             SeatNumber = reservation.SeatNumber,
@@ -55,6 +58,22 @@ public class ReservationService : IReservationService
         {
             Success = true,
             Id = r.Id,
+            UserId = r.UserId,
+            FlightId = r.FlightId,
+            PassengerName = r.PassengerName,
+            SeatNumber = r.SeatNumber
+        }).ToList();
+    }
+
+    public async Task<List<ReservationResponseDto>> GetMineAsync(string userId)
+    {
+        var reservations = await _repository.GetByUserIdAsync(userId);
+
+        return reservations.Select(r => new ReservationResponseDto
+        {
+            Success = true,
+            Id = r.Id,
+            UserId = r.UserId,
             FlightId = r.FlightId,
             PassengerName = r.PassengerName,
             SeatNumber = r.SeatNumber
