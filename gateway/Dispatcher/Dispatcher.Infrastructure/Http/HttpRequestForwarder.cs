@@ -29,7 +29,28 @@ public class HttpRequestForwarder : IRequestForwarder
             if (header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase))
                 continue;
 
+<<<<<<< Updated upstream
             request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+=======
+            if (body != null && (method == "POST" || method == "PUT" || method == "PATCH" || method == "DELETE"))
+            {
+                request.Content = new StreamContent(body);
+            }
+
+            foreach (var header in headers)
+            {
+                if (header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value))
+                {
+                    request.Content ??= new StreamContent(Stream.Null);
+                    request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+
+            return await _httpClient.SendAsync(request);
+>>>>>>> Stashed changes
         }
 
         // Body varsa ekle
@@ -37,8 +58,18 @@ public class HttpRequestForwarder : IRequestForwarder
         {
             request.Content = new StreamContent(body);
         }
+<<<<<<< Updated upstream
 
         var response = await _httpClient.SendAsync(request);
         return response;
+=======
+        catch (TaskCanceledException)
+        {
+            return new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable)
+            {
+                Content = new StringContent("Upstream service timed out.")
+            };
+        }
+>>>>>>> Stashed changes
     }
 }

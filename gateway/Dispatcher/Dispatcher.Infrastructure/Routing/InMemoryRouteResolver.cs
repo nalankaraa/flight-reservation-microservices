@@ -16,7 +16,23 @@ public class InMemoryRouteResolver : IRouteResolver
                 PathPrefix = "/api/flights",
                 HttpMethod = "GET",
                 TargetServiceName = "FlightService",
+<<<<<<< Updated upstream
                 TargetBaseUrl = "http://flightservice:5002"
+=======
+                TargetBaseUrl = "http://flightservice:5002",
+                RequiresAuth = true,
+                AllowedRoles = new List<string> { "Admin", "Customer" }
+            },
+            new RouteDefinition
+            {
+                Id = Guid.NewGuid().ToString(),
+                PathPrefix = "/api/flights",
+                HttpMethod = "POST",
+                TargetServiceName = "FlightService",
+                TargetBaseUrl = "http://flightservice:5002",
+                RequiresAuth = true,
+                AllowedRoles = new List<string> { "Admin" }
+>>>>>>> Stashed changes
             }
         };
     }
