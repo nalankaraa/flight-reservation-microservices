@@ -13,8 +13,13 @@ public class InMemoryReservationRepository : IReservationRepository
 		return Task.CompletedTask;
 	}
 
-	public Task<List<Reservation>> GetAllAsync()
-	{
-		return Task.FromResult(_reservations.ToList());
-	}
+    public Task<List<Reservation>> GetAllAsync()
+    {
+        return Task.FromResult(_reservations.ToList());
+    }
+
+    public Task<List<Reservation>> GetByUserIdAsync(string userId)
+    {
+        return Task.FromResult(_reservations.Where(x => x.UserId == userId).ToList());
+    }
 }

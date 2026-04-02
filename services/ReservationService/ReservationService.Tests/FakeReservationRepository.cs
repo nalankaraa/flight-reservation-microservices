@@ -17,4 +17,9 @@ public class FakeReservationRepository : IReservationRepository
     {
         return Task.FromResult(_reservations);
     }
+
+    public Task<List<Reservation>> GetByUserIdAsync(string userId)
+    {
+        return Task.FromResult(_reservations.Where(x => x.UserId == userId).ToList());
+    }
 }
