@@ -10,13 +10,14 @@ public class AuthServiceTests
     {
         var repository = new FakeUserRepository();
         var tokenService = new FakeTokenService();
-        var service = new AuthService.Application.Services.AuthService(repository, tokenService);
+        var passwordHasher = new FakePasswordHasher();
+        var service = new AuthService.Application.Services.AuthService(repository, tokenService, passwordHasher);
 
         var request = new AuthService.Application.Dtos.RegisterRequestDto
         {
             Email = "test@mail.com",
-            Password = "123456",
-            Role = "User"
+            Password = "12345678",
+            Role = "Customer"
         };
 
         var result = await service.RegisterAsync(request);
@@ -32,20 +33,21 @@ public class AuthServiceTests
     {
         var repository = new FakeUserRepository();
         var tokenService = new FakeTokenService();
-        var service = new AuthService.Application.Services.AuthService(repository, tokenService);
+        var passwordHasher = new FakePasswordHasher();
+        var service = new AuthService.Application.Services.AuthService(repository, tokenService, passwordHasher);
 
         await service.RegisterAsync(new AuthService.Application.Dtos.RegisterRequestDto
         {
             Email = "test@mail.com",
-            Password = "123456",
-            Role = "User"
+            Password = "12345678",
+            Role = "Customer"
         });
 
         var result = await service.RegisterAsync(new AuthService.Application.Dtos.RegisterRequestDto
         {
             Email = "test@mail.com",
-            Password = "123456",
-            Role = "User"
+            Password = "12345678",
+            Role = "Customer"
         });
 
         result.Success.Should().BeFalse();
@@ -57,19 +59,20 @@ public class AuthServiceTests
     {
         var repository = new FakeUserRepository();
         var tokenService = new FakeTokenService();
-        var service = new AuthService.Application.Services.AuthService(repository, tokenService);
+        var passwordHasher = new FakePasswordHasher();
+        var service = new AuthService.Application.Services.AuthService(repository, tokenService, passwordHasher);
 
         await service.RegisterAsync(new AuthService.Application.Dtos.RegisterRequestDto
         {
             Email = "test@mail.com",
-            Password = "123456",
-            Role = "User"
+            Password = "12345678",
+            Role = "Customer"
         });
 
         var login = new AuthService.Application.Dtos.LoginRequestDto
         {
             Email = "test@mail.com",
-            Password = "123456"
+            Password = "12345678"
         };
 
         var result = await service.LoginAsync(login);
@@ -83,13 +86,14 @@ public class AuthServiceTests
     {
         var repository = new FakeUserRepository();
         var tokenService = new FakeTokenService();
-        var service = new AuthService.Application.Services.AuthService(repository, tokenService);
+        var passwordHasher = new FakePasswordHasher();
+        var service = new AuthService.Application.Services.AuthService(repository, tokenService, passwordHasher);
 
         await service.RegisterAsync(new AuthService.Application.Dtos.RegisterRequestDto
         {
             Email = "test@mail.com",
-            Password = "123456",
-            Role = "User"
+            Password = "12345678",
+            Role = "Customer"
         });
 
         var login = new AuthService.Application.Dtos.LoginRequestDto
@@ -102,5 +106,24 @@ public class AuthServiceTests
 
         result.Success.Should().BeFalse();
         result.Message.Should().Be("Invalid credentials.");
+    }
+
+    [Fact]
+    public async Task Register_Should_Return_Failure_When_Role_Is_Invalid()
+    {
+        var repository = new FakeUserRepository();
+        var tokenService = new FakeTokenService();
+        var passwordHasher = new FakePasswordHasher();
+        var service = new AuthService.Application.Services.AuthService(repository, tokenService, passwordHasher);
+
+        var result = await service.RegisterAsync(new AuthService.Application.Dtos.RegisterRequestDto
+        {
+            Email = "test@mail.com",
+            Password = "12345678",
+            Role = "User"
+        });
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Role must be either Admin or Customer.");
     }
 }

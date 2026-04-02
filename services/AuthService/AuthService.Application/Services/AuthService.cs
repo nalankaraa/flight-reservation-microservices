@@ -6,13 +6,24 @@ namespace AuthService.Application.Services;
 
 public class AuthService : IAuthService
 {
+    private static readonly HashSet<string> AllowedRoles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Admin",
+        "Customer"
+    };
+
     private readonly IUserRepository _repository;
     private readonly ITokenService _tokenService;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public AuthService(IUserRepository repository, ITokenService tokenService)
+    public AuthService(
+        IUserRepository repository,
+        ITokenService tokenService,
+        IPasswordHasher passwordHasher)
     {
         _repository = repository;
         _tokenService = tokenService;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
@@ -25,6 +36,15 @@ public class AuthService : IAuthService
             {
                 Success = false,
                 Message = "Email, password and role are required."
+            };
+        }
+
+        if (!AllowedRoles.Contains(request.Role))
+        {
+            return new AuthResponseDto
+            {
+                Success = false,
+                Message = "Role must be either Admin or Customer."
             };
         }
 
@@ -41,9 +61,9 @@ public class AuthService : IAuthService
 
         var user = new User
         {
-            Email = request.Email,
-            Password = request.Password,
-            Role = request.Role
+            Email = request.Email.Trim().ToLowerInvariant(),
+            PasswordHash = _passwordHasher.HashPassword(request.Password),
+            Role = NormalizeRole(request.Role)
         };
 
         await _repository.AddAsync(user);
@@ -54,7 +74,8 @@ public class AuthService : IAuthService
         {
             Success = true,
             Token = token,
-            Message = "User registered successfully."
+            Message = "User registered successfully.",
+            User = MapToProfile(user)
         };
     }
 
@@ -70,9 +91,9 @@ public class AuthService : IAuthService
             };
         }
 
-        var user = await _repository.GetByEmailAsync(request.Email);
+        var user = await _repository.GetByEmailAsync(request.Email.Trim().ToLowerInvariant());
 
-        if (user == null || user.Password != request.Password)
+        if (user == null || !_passwordHasher.VerifyPassword(user.PasswordHash, request.Password))
         {
             return new AuthResponseDto
             {
@@ -87,7 +108,30 @@ public class AuthService : IAuthService
         {
             Success = true,
             Token = token,
-            Message = "Login successful."
+            Message = "Login successful.",
+            User = MapToProfile(user)
+        };
+    }
+
+    public async Task<UserProfileDto?> GetByIdAsync(string userId)
+    {
+        var user = await _repository.GetByIdAsync(userId);
+        return user is null ? null : MapToProfile(user);
+    }
+
+    private static string NormalizeRole(string role)
+    {
+        return AllowedRoles.First(r => string.Equals(r, role, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static UserProfileDto MapToProfile(User user)
+    {
+        return new UserProfileDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Role = user.Role,
+            CreatedAtUtc = user.CreatedAtUtc
         };
     }
 }
