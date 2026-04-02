@@ -18,4 +18,10 @@ public class InMemoryUserRepository : IUserRepository
         var user = _users.FirstOrDefault(u => u.Email == email);
         return Task.FromResult(user);
     }
+
+    public Task<User?> GetByIdAsync(string id)
+    {
+        var user = _users.FirstOrDefault(u => u.Id == id);
+        return Task.FromResult(user);
+    }
 }

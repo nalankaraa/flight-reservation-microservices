@@ -17,4 +17,9 @@ public class FakeUserRepository : IUserRepository
     {
         return Task.FromResult(Users.FirstOrDefault(u => u.Email == email));
     }
+
+    public Task<User?> GetByIdAsync(string id)
+    {
+        return Task.FromResult(Users.FirstOrDefault(u => u.Id == id));
+    }
 }
