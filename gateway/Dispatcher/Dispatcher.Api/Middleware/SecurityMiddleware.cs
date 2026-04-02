@@ -1,4 +1,5 @@
 using Dispatcher.Domain.Routing;
+using System.Security.Claims;
 
 namespace Dispatcher.Api.Middleware;
 
@@ -20,14 +21,14 @@ public class SecurityMiddleware
 
         if (route is not null)
         {
-            if (route.RequiresAuth && !HasAuthorizationHeader(context))
+            if (route.RequiresAuth && !IsAuthenticated(context))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 await context.Response.WriteAsync("Unauthorized");
                 return;
             }
 
-            if (route.AllowedRoles.Any() && !IsUserInAllowedRoles(context, route.AllowedRoles))
+            if (route.RequiresAuth && route.AllowedRoles.Any() && !IsUserInAllowedRoles(context, route.AllowedRoles))
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 await context.Response.WriteAsync("Forbidden");
@@ -38,20 +39,17 @@ public class SecurityMiddleware
         await _next(context);
     }
 
-    private static bool HasAuthorizationHeader(HttpContext context)
+    private static bool IsAuthenticated(HttpContext context)
     {
-        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-        return !string.IsNullOrWhiteSpace(authHeader);
+        return context.User.Identity?.IsAuthenticated == true;
     }
 
     private static bool IsUserInAllowedRoles(HttpContext context, List<string> allowedRoles)
     {
-        var roleHeader = context.Request.Headers["Role"].FirstOrDefault();
+        var userRoles = context.User.FindAll(ClaimTypes.Role)
+            .Select(claim => claim.Value)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        if (string.IsNullOrWhiteSpace(roleHeader))
-            return false;
-
-        return allowedRoles.Any(role =>
-            string.Equals(role, roleHeader, StringComparison.OrdinalIgnoreCase));
+        return allowedRoles.Any(userRoles.Contains);
     }
 }

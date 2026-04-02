@@ -16,9 +16,9 @@ public class InMemoryRouteResolver : IRouteResolver
                 PathPrefix = "/api/flights",
                 HttpMethod = "GET",
                 TargetServiceName = "FlightService",
-                TargetBaseUrl = "http://flightservice:5002",
+                TargetBaseUrl = "http://localhost:5162",
                 RequiresAuth = true,
-                AllowedRoles = new List<string> { "Admin", "User" }
+                AllowedRoles = new List<string> { "Admin", "Customer" }
             },
             new RouteDefinition
             {
@@ -26,7 +26,7 @@ public class InMemoryRouteResolver : IRouteResolver
                 PathPrefix = "/api/flights",
                 HttpMethod = "POST",
                 TargetServiceName = "FlightService",
-                TargetBaseUrl = "http://flightservice:5002",
+                TargetBaseUrl = "http://localhost:5162",
                 RequiresAuth = true,
                 AllowedRoles = new List<string> { "Admin" }
             }

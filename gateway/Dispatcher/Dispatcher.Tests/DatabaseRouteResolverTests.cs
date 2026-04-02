@@ -19,9 +19,9 @@ public class DatabaseRouteResolverTests
             PathPrefix = "/api/flights",
             HttpMethod = "GET",
             TargetServiceName = "FlightService",
-            TargetBaseUrl = "http://flightservice:5002",
+            TargetBaseUrl = "http://localhost:5162",
             RequiresAuth = true,
-            AllowedRoles = new List<string> { "Admin", "User" }
+            AllowedRoles = new List<string> { "Admin", "Customer" }
         };
 
         var repositoryMock = new Mock<IRouteRepository>();
