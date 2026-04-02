@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using NotificationService.Application.Dtos;
 using NotificationService.Application.Services;
 
@@ -6,6 +7,7 @@ namespace NotificationService.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class NotificationsController : ControllerBase
 {
     private readonly INotificationService _notificationService;
@@ -16,6 +18,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Create([FromBody] CreateNotificationDto request)
     {
         var result = await _notificationService.CreateAsync(request);
@@ -23,6 +26,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> GetById(string id)
     {
         var result = await _notificationService.GetByIdAsync(id);
@@ -34,6 +38,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpGet("user/{userId}")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> GetByUserId(string userId)
     {
         var result = await _notificationService.GetByUserIdAsync(userId);
@@ -41,6 +46,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpPost("{id}/send")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Send(string id)
     {
         var success = await _notificationService.SendAsync(id);
@@ -52,6 +58,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpPost("{id}/read")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> MarkAsRead(string id)
     {
         var success = await _notificationService.MarkAsReadAsync(id);
