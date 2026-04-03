@@ -8,5 +8,6 @@ public interface IReservationRepository
     Task DeleteAsync(string reservationId);
     Task<bool> ExistsByFlightAndSeatAsync(string flightId, string seatNumber);
     Task<List<Reservation>> GetAllAsync();
+    Task<Reservation?> GetByIdAsync(string id);
     Task<List<Reservation>> GetByUserIdAsync(string userId);
 }
