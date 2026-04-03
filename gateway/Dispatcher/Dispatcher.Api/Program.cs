@@ -7,6 +7,8 @@ using Dispatcher.Infrastructure.Http;
 using Dispatcher.Infrastructure.Logging;
 using Dispatcher.Infrastructure.Routing;
 using BuildingBlocks.Infrastructure.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,40 @@ var mongoConnectionString = mongoSettings["ConnectionString"] ?? "mongodb://loca
 var mongoDatabaseName = mongoSettings["DatabaseName"] ?? "dispatcher-db";
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Dispatcher API",
+        Version = "v1"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Bearer {token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 builder.Services.AddSharedJwtAuthentication(builder.Configuration);
 
 builder.Services.AddSingleton<IRequestLogRepository, InMemoryRequestLogRepository>();
@@ -42,6 +78,12 @@ using (var scope = app.Services.CreateScope())
 {
     var seedService = scope.ServiceProvider.GetRequiredService<RouteSeedService>();
     await seedService.SeedAsync();
+}
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseMiddleware<RequestLoggingMiddleware>();
