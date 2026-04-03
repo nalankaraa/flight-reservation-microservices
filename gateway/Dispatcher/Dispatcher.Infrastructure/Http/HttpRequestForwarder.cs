@@ -22,9 +22,19 @@ public class HttpRequestForwarder : IRequestForwarder
             targetUrl
         );
 
+        if (body != null && HttpMethodAllowsBody(method))
+        {
+            request.Content = new StreamContent(body);
+        }
+
         foreach (var header in headers)
         {
             if (header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (TryAddContentHeader(request, header))
             {
                 continue;
             }
@@ -36,12 +46,19 @@ public class HttpRequestForwarder : IRequestForwarder
             }
         }
 
-        if (body != null && HttpMethodAllowsBody(method))
-        {
-            request.Content = new StreamContent(body);
-        }
-
         return _httpClient.SendAsync(request);
+    }
+
+    private static bool TryAddContentHeader(HttpRequestMessage request, KeyValuePair<string, string> header)
+    {
+        if (request.Content is null)
+            return false;
+
+        if (!header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        return true;
     }
 
     private static bool HttpMethodAllowsBody(string method)
