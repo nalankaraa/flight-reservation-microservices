@@ -36,6 +36,7 @@ public class MongoPaymentRepository : IPaymentRepository
         {
             Id = payment.Id,
             ReservationId = payment.ReservationId,
+            UserId = payment.UserId,
             Amount = payment.Amount,
             Status = payment.Status,
             CreatedAtUtc = payment.CreatedAtUtc
@@ -48,6 +49,7 @@ public class MongoPaymentRepository : IPaymentRepository
         {
             Id = document.Id,
             ReservationId = document.ReservationId,
+            UserId = document.UserId,
             Amount = document.Amount,
             Status = document.Status,
             CreatedAtUtc = document.CreatedAtUtc
@@ -59,6 +61,7 @@ public class MongoPaymentRepository : IPaymentRepository
         [BsonId]
         public string Id { get; set; } = default!;
         public string ReservationId { get; set; } = default!;
+        public string UserId { get; set; } = default!;
         public decimal Amount { get; set; }
         public string Status { get; set; } = default!;
         public DateTime CreatedAtUtc { get; set; }

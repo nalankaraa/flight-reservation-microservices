@@ -13,15 +13,25 @@ public static class JwtTestTokenFactory
 
     public static string CreateToken(string role)
     {
-        return CreateToken(role, DateTime.UtcNow.AddHours(1));
+        return CreateToken(role, "user-1", "test@mail.com", DateTime.UtcNow.AddHours(1));
     }
 
     public static string CreateToken(string role, DateTime expiresUtc)
     {
+        return CreateToken(role, "user-1", "test@mail.com", expiresUtc);
+    }
+
+    public static string CreateToken(string role, string userId, string email)
+    {
+        return CreateToken(role, userId, email, DateTime.UtcNow.AddHours(1));
+    }
+
+    public static string CreateToken(string role, string userId, string email, DateTime expiresUtc)
+    {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, "user-1"),
-            new(ClaimTypes.Email, "test@mail.com"),
+            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.Email, email),
             new(ClaimTypes.Role, role)
         };
 
