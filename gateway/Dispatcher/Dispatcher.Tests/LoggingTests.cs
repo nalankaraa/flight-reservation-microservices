@@ -40,8 +40,7 @@ public class LoggingTests : IClassFixture<DispatcherWebApplicationFactory>
         }).CreateClient();
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/flights");
-        request.Headers.Add("Authorization", "Bearer fake-token");
-        request.Headers.Add("Role", "User");
+        request.Headers.Add("Authorization", $"Bearer {JwtTestTokenFactory.CreateToken("Customer")}");
 
         // Act
         var response = await client.SendAsync(request);

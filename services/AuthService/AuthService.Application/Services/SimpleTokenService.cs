@@ -12,6 +12,7 @@ public class SimpleTokenService : ITokenService
     private readonly string _issuer;
     private readonly string _audience;
     private readonly string _key;
+    private readonly int _expiresInMinutes;
 
     public SimpleTokenService(IConfiguration configuration)
     {
@@ -21,6 +22,7 @@ public class SimpleTokenService : ITokenService
         _issuer = jwtOptions.Issuer;
         _audience = jwtOptions.Audience;
         _key = jwtOptions.Key;
+        _expiresInMinutes = jwtOptions.ExpiresInMinutes;
     }
 
     public string GenerateToken(string userId, string email, string role)
@@ -42,7 +44,7 @@ public class SimpleTokenService : ITokenService
             issuer: _issuer,
             audience: _audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
+            expires: DateTime.UtcNow.AddMinutes(_expiresInMinutes),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

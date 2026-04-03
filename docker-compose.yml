@@ -46,9 +46,6 @@ services:
       Jwt__Audience: Dispatcher
       Mongo__ConnectionString: mongodb://auth-db:27017
       Mongo__DatabaseName: auth-db
-      AdminSeed__Enabled: "true"
-      AdminSeed__Email: admin@system.local
-      AdminSeed__Password: Admin123!
     expose:
       - "8080"
     networks:

@@ -1,41 +1,79 @@
-var builder = WebApplication.CreateBuilder(args);
+using System.Net.Http.Headers;
+using ReservationService.Application.Clients;
+using ReservationService.Application.Repositories;
+using ReservationService.Application.Services;
+using ReservationService.Infrastructure.Repositories;
+using ReservationService.Infrastructure.Clients;
+using BuildingBlocks.Infrastructure.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+var builder = WebApplication.CreateBuilder(args);
+var availabilityBaseUrl = builder.Configuration["Services:Availability:BaseUrl"] ?? "http://localhost:5099/";
+var mongoConnectionString = builder.Configuration["Mongo:ConnectionString"] ?? "mongodb://localhost:27017";
+var mongoDatabaseName = builder.Configuration["Mongo:DatabaseName"] ?? "reservation-db";
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Reservation Service API", Version = "v1" });
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Bearer {token}"
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+builder.Services.AddSharedJwtAuthentication(builder.Configuration);
+builder.Services.AddHttpClient<ISeatAvailabilityClient, AvailabilityApiClient>(client =>
+{
+    client.BaseAddress = new Uri(availabilityBaseUrl);
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+
+builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    return client.GetDatabase(mongoDatabaseName);
+});
+
+builder.Services.AddSingleton<IReservationRepository, MongoReservationRepository>();
+builder.Services.AddScoped<IReservationService, ReservationService.Application.Services.ReservationService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapControllers();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+public partial class Program { }

@@ -1,5 +1,4 @@
-﻿using Dispatcher.Application.Forwarding;
-using System.Net.Http;
+using Dispatcher.Application.Forwarding;
 
 namespace Dispatcher.Infrastructure.Http;
 
@@ -12,40 +11,61 @@ public class HttpRequestForwarder : IRequestForwarder
         _httpClient = httpClient;
     }
 
-    public async Task<HttpResponseMessage> ForwardAsync(
+    public Task<HttpResponseMessage> ForwardAsync(
         string method,
         string targetUrl,
         Dictionary<string, string> headers,
         Stream body)
     {
-        try
+        var request = new HttpRequestMessage(
+            new HttpMethod(method),
+            targetUrl
+        );
+
+        if (body != null && HttpMethodAllowsBody(method))
         {
-            var request = new HttpRequestMessage(
-                new HttpMethod(method),
-                targetUrl
-            );
+            request.Content = new StreamContent(body);
+        }
 
-            foreach (var header in headers)
+        foreach (var header in headers)
+        {
+            if (header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase))
             {
-                if (header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                continue;
             }
 
-            if (body != null && (method == "POST" || method == "PUT"))
+            if (TryAddContentHeader(request, header))
             {
-                request.Content = new StreamContent(body);
+                continue;
             }
 
-            return await _httpClient.SendAsync(request);
-        }
-        catch (HttpRequestException)
-        {
-            return new HttpResponseMessage(System.Net.HttpStatusCode.BadGateway)
+            if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value))
             {
-                Content = new StringContent("Upstream service is unavailable.")
-            };
+                request.Content ??= new StreamContent(Stream.Null);
+                request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
         }
+
+        return _httpClient.SendAsync(request);
+    }
+
+    private static bool TryAddContentHeader(HttpRequestMessage request, KeyValuePair<string, string> header)
+    {
+        if (request.Content is null)
+            return false;
+
+        if (!header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        return true;
+    }
+
+    private static bool HttpMethodAllowsBody(string method)
+    {
+        return method.Equals("POST", StringComparison.OrdinalIgnoreCase) ||
+               method.Equals("PUT", StringComparison.OrdinalIgnoreCase) ||
+               method.Equals("PATCH", StringComparison.OrdinalIgnoreCase) ||
+               method.Equals("DELETE", StringComparison.OrdinalIgnoreCase);
     }
 }

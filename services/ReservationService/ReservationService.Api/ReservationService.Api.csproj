@@ -8,11 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.11" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ReservationService.Application\ReservationService.Application.csproj" />
     <ProjectReference Include="..\ReservationService.Infrastructure\ReservationService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\shared\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

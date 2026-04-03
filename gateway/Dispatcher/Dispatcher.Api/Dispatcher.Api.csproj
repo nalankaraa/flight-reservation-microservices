@@ -1,8 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.11" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <ProjectReference Include="..\Dispatcher.Application\Dispatcher.Application.csproj" />
     <ProjectReference Include="..\Dispatcher.Infrastructure\Dispatcher.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\shared\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\services\AuthService\AuthService.Application\AuthService.Application.csproj" />
+    <ProjectReference Include="..\..\..\services\FlightService\FlightService.Application\FlightService.Application.csproj" />
+    <ProjectReference Include="..\..\..\services\ReservationService\ReservationService.Application\ReservationService.Application.csproj" />
+    <ProjectReference Include="..\..\..\services\AvailabilityService\AvailabilityService.Application\AvailabilityService.Application.csproj" />
+    <ProjectReference Include="..\..\..\services\PaymentService\PaymentService.Application\PaymentService.Application.csproj" />
+    <ProjectReference Include="..\..\..\services\NotificationService\NotificationService.Application\NotificationService.Application.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\BuildingBlocks\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
     <ProjectReference Include="..\ReservationService.Domain\ReservationService.Domain.csproj" />
   </ItemGroup>
 

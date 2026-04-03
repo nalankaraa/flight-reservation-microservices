@@ -25,6 +25,21 @@ public class InMemoryRouteRepository : IRouteRepository
         return Task.CompletedTask;
     }
 
+    public Task UpsertRouteAsync(RouteDefinition route)
+    {
+        var existing = _routes.FirstOrDefault(x =>
+            x.PathPrefix == route.PathPrefix &&
+            x.HttpMethod == route.HttpMethod);
+
+        if (existing is not null)
+        {
+            _routes.Remove(existing);
+        }
+
+        _routes.Add(route);
+        return Task.CompletedTask;
+    }
+
     public Task<List<RouteDefinition>> GetAllRoutesAsync()
     {
         return Task.FromResult(_routes.ToList());

@@ -31,9 +31,9 @@ public class MongoRouteRepositoryTests : IDisposable
             PathPrefix = "/api/flights",
             HttpMethod = "GET",
             TargetServiceName = "FlightService",
-            TargetBaseUrl = "http://flightservice:5002",
+            TargetBaseUrl = "http://localhost:5162",
             RequiresAuth = true,
-            AllowedRoles = new List<string> { "Admin", "User" }
+            AllowedRoles = new List<string> { "Admin", "Customer" }
         });
 
         // Act
@@ -44,9 +44,9 @@ public class MongoRouteRepositoryTests : IDisposable
         result!.PathPrefix.Should().Be("/api/flights");
         result.HttpMethod.Should().Be("GET");
         result.TargetServiceName.Should().Be("FlightService");
-        result.TargetBaseUrl.Should().Be("http://flightservice:5002");
+        result.TargetBaseUrl.Should().Be("http://localhost:5162");
         result.RequiresAuth.Should().BeTrue();
-        result.AllowedRoles.Should().Contain(new[] { "Admin", "User" });
+        result.AllowedRoles.Should().Contain(new[] { "Admin", "Customer" });
     }
 
     [Fact]
@@ -74,9 +74,9 @@ public class MongoRouteRepositoryTests : IDisposable
             PathPrefix = "/api/flights",
             HttpMethod = "GET",
             TargetServiceName = "FlightService",
-            TargetBaseUrl = "http://flightservice:5002",
+            TargetBaseUrl = "http://localhost:5162",
             RequiresAuth = true,
-            AllowedRoles = new List<string> { "Admin", "User" }
+            AllowedRoles = new List<string> { "Admin", "Customer" }
         });
 
         // Act
@@ -84,6 +84,39 @@ public class MongoRouteRepositoryTests : IDisposable
 
         // Assert
         result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task UpsertRouteAsync_ExistingRoute_UpdatesTargetBaseUrl()
+    {
+        var repository = new MongoRouteRepository(_database);
+
+        await repository.AddRouteAsync(new RouteDefinition
+        {
+            Id = Guid.NewGuid().ToString(),
+            PathPrefix = "/api/flights",
+            HttpMethod = "GET",
+            TargetServiceName = "FlightService",
+            TargetBaseUrl = "http://localhost:5162",
+            RequiresAuth = true,
+            AllowedRoles = new List<string> { "Admin", "Customer" }
+        });
+
+        await repository.UpsertRouteAsync(new RouteDefinition
+        {
+            Id = Guid.NewGuid().ToString(),
+            PathPrefix = "/api/flights",
+            HttpMethod = "GET",
+            TargetServiceName = "FlightService",
+            TargetBaseUrl = "http://flightservice:8080",
+            RequiresAuth = true,
+            AllowedRoles = new List<string> { "Admin", "Customer" }
+        });
+
+        var result = await repository.FindRouteAsync("/api/flights", "GET");
+
+        result.Should().NotBeNull();
+        result!.TargetBaseUrl.Should().Be("http://flightservice:8080");
     }
 
     public void Dispose()

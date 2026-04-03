@@ -35,3 +35,11 @@ node_modules/
 # Temporary
 tmp/
 temp/
+
+# Local dotnet/nuget caches
+.nuget/
+.dotnet-home/
+.appdata/
+
+# Local restore config
+NuGet.Config
