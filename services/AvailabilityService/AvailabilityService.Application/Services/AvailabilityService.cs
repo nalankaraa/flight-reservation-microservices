@@ -1,4 +1,5 @@
 using AvailabilityService.Application.Dtos;
+using AvailabilityService.Application.Clients;
 using AvailabilityService.Application.Repositories;
 using AvailabilityService.Domain.Entities;
 
@@ -7,22 +8,28 @@ namespace AvailabilityService.Application.Services;
 public class AvailabilityService : IAvailabilityService
 {
     private readonly ISeatHoldRepository _repository;
+    private readonly IFlightCapacityClient _flightCapacityClient;
 
-    public AvailabilityService(ISeatHoldRepository repository)
+    public AvailabilityService(ISeatHoldRepository repository, IFlightCapacityClient flightCapacityClient)
     {
         _repository = repository;
+        _flightCapacityClient = flightCapacityClient;
     }
 
     public async Task<FlightAvailabilityDto> GetAvailabilityAsync(string flightId)
     {
         var seats = await GetSeatAvailabilityInternalAsync(flightId);
+        var capacity = await _flightCapacityClient.GetCapacityAsync(flightId, string.Empty);
+        var totalSeats = capacity.Success ? capacity.AvailableSeatCount : seats.Count;
+        var occupiedSeats = seats.Count(x => !x.IsAvailable);
 
         return new FlightAvailabilityDto
         {
             FlightId = flightId,
+            TotalSeats = totalSeats,
             TotalTrackedSeats = seats.Count,
-            AvailableSeats = seats.Count(x => x.IsAvailable),
-            LockedSeats = seats.Count(x => !x.IsAvailable)
+            AvailableSeats = Math.Max(totalSeats - occupiedSeats, 0),
+            LockedSeats = occupiedSeats
         };
     }
 

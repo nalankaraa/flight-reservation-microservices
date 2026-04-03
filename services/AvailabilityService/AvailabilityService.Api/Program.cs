@@ -1,15 +1,19 @@
 using AvailabilityService.Application.Repositories;
 using AvailabilityService.Application.Services;
+using AvailabilityService.Application.Clients;
+using AvailabilityService.Infrastructure.Clients;
 using AvailabilityService.Infrastructure.Repositories;
 using BuildingBlocks.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 var mongoSettings = builder.Configuration.GetSection("Mongo");
 var mongoConnectionString = mongoSettings["ConnectionString"] ?? throw new InvalidOperationException("Mongo:ConnectionString is required.");
 var mongoDatabaseName = mongoSettings["DatabaseName"] ?? throw new InvalidOperationException("Mongo:DatabaseName is required.");
+var flightBaseUrl = builder.Configuration["Services:Flight:BaseUrl"] ?? "http://localhost:5092/";
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -47,6 +51,12 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddSharedJwtAuthentication(builder.Configuration);
+builder.Services.AddHttpClient<IFlightCapacityClient, FlightApiClient>(client =>
+{
+    client.BaseAddress = new Uri(flightBaseUrl);
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
 builder.Services.AddSingleton(sp =>
 {
