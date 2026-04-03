@@ -110,6 +110,7 @@ services:
       Jwt__Audience: Dispatcher
       Mongo__ConnectionString: mongodb://availability-db:27017
       Mongo__DatabaseName: availability-db
+      Services__Flight__BaseUrl: http://flightservice:8080/
     expose:
       - "8080"
     networks:

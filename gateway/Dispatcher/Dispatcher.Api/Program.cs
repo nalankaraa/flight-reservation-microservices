@@ -59,7 +59,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddSharedJwtAuthentication(builder.Configuration);
 
-builder.Services.AddSingleton<IRequestLogRepository, InMemoryRequestLogRepository>();
+builder.Services.AddSingleton<IRequestLogRepository, MongoRequestLogRepository>();
 builder.Services.AddHttpClient<IRequestForwarder, HttpRequestForwarder>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(10);

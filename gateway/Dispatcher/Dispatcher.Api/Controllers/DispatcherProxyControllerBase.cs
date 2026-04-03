@@ -2,6 +2,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using Dispatcher.Application.Forwarding;
+using Dispatcher.Api.Middleware;
 using Dispatcher.Domain.Routing;
 using Microsoft.AspNetCore.Mvc;
 
@@ -46,8 +47,11 @@ public abstract class DispatcherProxyControllerBase : ControllerBase
 
         if (route is null)
         {
+            HttpContext.Items[DispatcherRequestLogContextKeys.ErrorMessage] = "Not Found";
             return NotFound();
         }
+
+        HttpContext.Items[DispatcherRequestLogContextKeys.TargetService] = route.TargetServiceName;
 
         var targetUrl = route.TargetBaseUrl.TrimEnd('/') + path + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty);
 
@@ -67,10 +71,12 @@ public abstract class DispatcherProxyControllerBase : ControllerBase
         }
         catch (HttpRequestException)
         {
+            HttpContext.Items[DispatcherRequestLogContextKeys.ErrorMessage] = "Bad Gateway";
             return StatusCode(StatusCodes.Status502BadGateway, "Bad Gateway");
         }
         catch (TaskCanceledException)
         {
+            HttpContext.Items[DispatcherRequestLogContextKeys.ErrorMessage] = "Service Unavailable";
             return StatusCode(StatusCodes.Status503ServiceUnavailable, "Service Unavailable");
         }
     }

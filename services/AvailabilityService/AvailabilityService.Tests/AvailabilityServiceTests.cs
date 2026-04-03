@@ -10,7 +10,8 @@ public class AvailabilityServiceTests
     public async Task LockSeatAsync_Should_Create_Seat_Lock()
     {
         var repository = new FakeSeatHoldRepository();
-        var service = new AvailabilityService.Application.Services.AvailabilityService(repository);
+        var flightCapacityClient = new FakeFlightCapacityClient();
+        var service = new AvailabilityService.Application.Services.AvailabilityService(repository, flightCapacityClient);
 
         var result = await service.LockSeatAsync("flight-1", new LockSeatRequestDto
         {
@@ -30,7 +31,8 @@ public class AvailabilityServiceTests
     public async Task LockSeatAsync_Should_Return_Null_When_Seat_Is_Already_Locked()
     {
         var repository = new FakeSeatHoldRepository();
-        var service = new AvailabilityService.Application.Services.AvailabilityService(repository);
+        var flightCapacityClient = new FakeFlightCapacityClient();
+        var service = new AvailabilityService.Application.Services.AvailabilityService(repository, flightCapacityClient);
 
         await service.LockSeatAsync("flight-1", new LockSeatRequestDto
         {
@@ -51,7 +53,8 @@ public class AvailabilityServiceTests
     public async Task GetSeatsAsync_Should_Mark_Expired_Lock_As_Available()
     {
         var repository = new FakeSeatHoldRepository();
-        var service = new AvailabilityService.Application.Services.AvailabilityService(repository);
+        var flightCapacityClient = new FakeFlightCapacityClient();
+        var service = new AvailabilityService.Application.Services.AvailabilityService(repository, flightCapacityClient);
 
         await repository.TryLockSeatAsync(new Domain.Entities.SeatHold
         {
@@ -77,7 +80,8 @@ public class AvailabilityServiceTests
     public async Task ReleaseSeatAsync_Should_Release_Owned_Lock()
     {
         var repository = new FakeSeatHoldRepository();
-        var service = new AvailabilityService.Application.Services.AvailabilityService(repository);
+        var flightCapacityClient = new FakeFlightCapacityClient();
+        var service = new AvailabilityService.Application.Services.AvailabilityService(repository, flightCapacityClient);
 
         await service.LockSeatAsync("flight-1", new LockSeatRequestDto
         {
@@ -102,7 +106,8 @@ public class AvailabilityServiceTests
     public async Task ReleaseSeatAsync_Should_Fail_For_Other_User()
     {
         var repository = new FakeSeatHoldRepository();
-        var service = new AvailabilityService.Application.Services.AvailabilityService(repository);
+        var flightCapacityClient = new FakeFlightCapacityClient();
+        var service = new AvailabilityService.Application.Services.AvailabilityService(repository, flightCapacityClient);
 
         await service.LockSeatAsync("flight-1", new LockSeatRequestDto
         {
@@ -122,7 +127,8 @@ public class AvailabilityServiceTests
     public async Task ConfirmSeatAsync_Should_Mark_Seat_As_Reserved()
     {
         var repository = new FakeSeatHoldRepository();
-        var service = new AvailabilityService.Application.Services.AvailabilityService(repository);
+        var flightCapacityClient = new FakeFlightCapacityClient();
+        var service = new AvailabilityService.Application.Services.AvailabilityService(repository, flightCapacityClient);
 
         await service.LockSeatAsync("flight-1", new LockSeatRequestDto
         {
@@ -144,7 +150,11 @@ public class AvailabilityServiceTests
     public async Task GetAvailabilityAsync_Should_Return_Flight_Summary()
     {
         var repository = new FakeSeatHoldRepository();
-        var service = new AvailabilityService.Application.Services.AvailabilityService(repository);
+        var flightCapacityClient = new FakeFlightCapacityClient
+        {
+            AvailableSeatCount = 50
+        };
+        var service = new AvailabilityService.Application.Services.AvailabilityService(repository, flightCapacityClient);
 
         await service.LockSeatAsync("flight-1", new LockSeatRequestDto
         {
@@ -166,8 +176,33 @@ public class AvailabilityServiceTests
         var summary = await service.GetAvailabilityAsync("flight-1");
 
         summary.FlightId.Should().Be("flight-1");
+        summary.TotalSeats.Should().Be(50);
         summary.TotalTrackedSeats.Should().Be(2);
         summary.LockedSeats.Should().Be(1);
-        summary.AvailableSeats.Should().Be(1);
+        summary.AvailableSeats.Should().Be(49);
+    }
+
+    [Fact]
+    public async Task GetAvailabilityAsync_Should_Fall_Back_To_Tracked_Count_When_Flight_Service_Is_Unavailable()
+    {
+        var repository = new FakeSeatHoldRepository();
+        var flightCapacityClient = new FakeFlightCapacityClient
+        {
+            ShouldFail = true
+        };
+        var service = new AvailabilityService.Application.Services.AvailabilityService(repository, flightCapacityClient);
+
+        await service.LockSeatAsync("flight-1", new LockSeatRequestDto
+        {
+            SeatNumber = "1A",
+            HoldMinutes = 10
+        }, "user-1");
+
+        var summary = await service.GetAvailabilityAsync("flight-1");
+
+        summary.TotalSeats.Should().Be(1);
+        summary.TotalTrackedSeats.Should().Be(1);
+        summary.LockedSeats.Should().Be(1);
+        summary.AvailableSeats.Should().Be(0);
     }
 }

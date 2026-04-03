@@ -53,6 +53,8 @@ public class LoggingTests : IClassFixture<DispatcherWebApplicationFactory>
             log.Method == "GET" &&
             log.StatusCode == 200 &&
             log.DurationMs >= 0 &&
+            log.TargetService == "FlightService" &&
+            log.ErrorMessage == null &&
             log.TimestampUtc <= DateTime.UtcNow);
     }
 }
