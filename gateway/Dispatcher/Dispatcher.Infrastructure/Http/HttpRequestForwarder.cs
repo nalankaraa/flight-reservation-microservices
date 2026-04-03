@@ -22,10 +22,22 @@ public class HttpRequestForwarder : IRequestForwarder
             targetUrl
         );
 
+        if (body != null && HttpMethodAllowsBody(method))
+        {
+            request.Content = new StreamContent(body);
+        }
+
         foreach (var header in headers)
         {
             if (header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase))
             {
+                continue;
+            }
+
+            if (request.Content is not null &&
+                header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
+            {
+                request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 continue;
             }
 
@@ -34,11 +46,6 @@ public class HttpRequestForwarder : IRequestForwarder
                 request.Content ??= new StreamContent(Stream.Null);
                 request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
-        }
-
-        if (body != null && HttpMethodAllowsBody(method))
-        {
-            request.Content = new StreamContent(body);
         }
 
         return _httpClient.SendAsync(request);
