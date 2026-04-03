@@ -47,14 +47,23 @@ public class ReservationController : ControllerBase
             return BadRequest(ModelState);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var authorizationHeader = Request.Headers.Authorization.ToString();
 
-        if (string.IsNullOrWhiteSpace(userId))
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(authorizationHeader))
             return Unauthorized();
 
-        var result = await _reservationService.CreateAsync(request, userId);
+        var result = await _reservationService.CreateAsync(request, userId, authorizationHeader);
 
         if (!result.Success)
+        {
+            if (result.ErrorCode == "SeatConflict")
+                return Conflict(result);
+
+            if (result.ErrorCode == "AvailabilityUnavailable")
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, result);
+
             return BadRequest(result);
+        }
 
         return Ok(result);
     }

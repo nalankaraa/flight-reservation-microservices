@@ -3,6 +3,7 @@ namespace ReservationService.Application.Dtos;
 public class ReservationResponseDto
 {
     public bool Success { get; set; }
+    public string? ErrorCode { get; set; }
     public string? Id { get; set; }
     public string? UserId { get; set; }
     public string? FlightId { get; set; }

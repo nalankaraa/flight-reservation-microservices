@@ -2,11 +2,12 @@ using AvailabilityService.Application.Dtos;
 using AvailabilityService.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AvailabilityService.Api.Controllers;
 
 [ApiController]
-[Route("api/availability/holds")]
+[Route("api/availability")]
 [Authorize]
 public class AvailabilityController : ControllerBase
 {
@@ -17,50 +18,79 @@ public class AvailabilityController : ControllerBase
         _availabilityService = availabilityService;
     }
 
-    [HttpPost]
+    [HttpGet("{flightId}")]
     [Authorize(Roles = "Admin,Customer")]
-    public async Task<IActionResult> CreateHold([FromBody] CreateSeatHoldDto request)
+    public async Task<IActionResult> GetAvailability(string flightId)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _availabilityService.CreateHoldAsync(request);
-
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        var result = await _availabilityService.GetAvailabilityAsync(flightId);
+        return Ok(result);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{flightId}/seats")]
     [Authorize(Roles = "Admin,Customer")]
-    public async Task<IActionResult> GetById(string id)
+    public async Task<IActionResult> GetSeats(string flightId)
     {
-        var result = await _availabilityService.GetHoldByIdAsync(id);
+        var result = await _availabilityService.GetSeatsAsync(flightId);
+        return Ok(result);
+    }
+
+    [HttpPost("{flightId}/lock-seat")]
+    [Authorize(Roles = "Admin,Customer")]
+    public async Task<IActionResult> LockSeat(string flightId, [FromBody] LockSeatRequestDto request)
+    {
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
+
+        var result = await _availabilityService.LockSeatAsync(flightId, request, userId);
 
         if (result is null)
-            return NotFound();
+            return Conflict("Seat is already locked or reserved.");
 
         return Ok(result);
     }
 
-    [HttpPost("{id}/confirm")]
+    [HttpPost("{flightId}/confirm-seat")]
     [Authorize(Roles = "Admin,Customer")]
-    public async Task<IActionResult> Confirm(string id)
+    public async Task<IActionResult> ConfirmSeat(string flightId, [FromBody] ConfirmSeatRequestDto request)
     {
-        var success = await _availabilityService.ConfirmHoldAsync(id);
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
 
-        if (!success)
-            return BadRequest("Hold cannot be confirmed.");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        return NoContent();
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
+
+        var result = await _availabilityService.ConfirmSeatAsync(flightId, request.SeatNumber, userId);
+
+        if (result is null)
+            return Conflict("Seat cannot be confirmed.");
+
+        return Ok(result);
     }
 
-    [HttpDelete("{id}")]
+    [HttpPost("{flightId}/release-seat")]
     [Authorize(Roles = "Admin,Customer")]
-    public async Task<IActionResult> Cancel(string id)
+    public async Task<IActionResult> ReleaseSeat(string flightId, [FromBody] ReleaseSeatRequestDto request)
     {
-        var success = await _availabilityService.CancelHoldAsync(id);
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
+
+        var allowAnyUser = User.IsInRole("Admin");
+        var success = await _availabilityService.ReleaseSeatAsync(flightId, request, userId, allowAnyUser);
 
         if (!success)
-            return BadRequest("Hold cannot be cancelled.");
+            return Conflict("Seat cannot be released.");
 
         return NoContent();
     }
