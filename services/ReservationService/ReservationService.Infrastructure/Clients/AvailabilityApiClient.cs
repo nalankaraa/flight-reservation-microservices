@@ -15,11 +15,10 @@ public class AvailabilityApiClient : ISeatAvailabilityClient
 
     public async Task<SeatLockResult> LockSeatAsync(string flightId, string seatNumber, int holdMinutes, string authorizationHeader)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"api/availability/{flightId}/lock-seat");
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"api/availability/{flightId}/seats/{Uri.EscapeDataString(seatNumber)}/hold");
         request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
         request.Content = JsonContent.Create(new
         {
-            SeatNumber = seatNumber,
             HoldMinutes = holdMinutes
         });
 
@@ -66,12 +65,8 @@ public class AvailabilityApiClient : ISeatAvailabilityClient
 
     public async Task<SeatLockResult> ConfirmSeatAsync(string flightId, string seatNumber, string authorizationHeader)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"api/availability/{flightId}/confirm-seat");
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"api/availability/{flightId}/seats/{Uri.EscapeDataString(seatNumber)}/reservation");
         request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
-        request.Content = JsonContent.Create(new
-        {
-            SeatNumber = seatNumber
-        });
 
         try
         {
@@ -116,12 +111,8 @@ public class AvailabilityApiClient : ISeatAvailabilityClient
 
     public async Task ReleaseSeatAsync(string flightId, string seatNumber, string authorizationHeader)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"api/availability/{flightId}/release-seat");
+        using var request = new HttpRequestMessage(HttpMethod.Delete, $"api/availability/{flightId}/seats/{Uri.EscapeDataString(seatNumber)}/hold");
         request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
-        request.Content = JsonContent.Create(new
-        {
-            SeatNumber = seatNumber
-        });
 
         try
         {

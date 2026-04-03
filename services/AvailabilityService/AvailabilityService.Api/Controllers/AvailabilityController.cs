@@ -34,9 +34,9 @@ public class AvailabilityController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("{flightId}/lock-seat")]
+    [HttpPut("{flightId}/seats/{seatNumber}/hold")]
     [Authorize(Roles = "Admin,Customer")]
-    public async Task<IActionResult> LockSeat(string flightId, [FromBody] LockSeatRequestDto request)
+    public async Task<IActionResult> UpsertSeatHold(string flightId, string seatNumber, [FromBody] UpdateSeatHoldDto request)
     {
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
@@ -46,7 +46,11 @@ public class AvailabilityController : ControllerBase
         if (string.IsNullOrWhiteSpace(userId))
             return Unauthorized();
 
-        var result = await _availabilityService.LockSeatAsync(flightId, request, userId);
+        var result = await _availabilityService.LockSeatAsync(flightId, new LockSeatRequestDto
+        {
+            SeatNumber = seatNumber,
+            HoldMinutes = request.HoldMinutes
+        }, userId);
 
         if (result is null)
             return Conflict("Seat is already locked or reserved.");
@@ -54,19 +58,16 @@ public class AvailabilityController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("{flightId}/confirm-seat")]
+    [HttpPut("{flightId}/seats/{seatNumber}/reservation")]
     [Authorize(Roles = "Admin,Customer")]
-    public async Task<IActionResult> ConfirmSeat(string flightId, [FromBody] ConfirmSeatRequestDto request)
+    public async Task<IActionResult> ConfirmSeatReservation(string flightId, string seatNumber)
     {
-        if (!ModelState.IsValid)
-            return ValidationProblem(ModelState);
-
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrWhiteSpace(userId))
             return Unauthorized();
 
-        var result = await _availabilityService.ConfirmSeatAsync(flightId, request.SeatNumber, userId);
+        var result = await _availabilityService.ConfirmSeatAsync(flightId, seatNumber, userId);
 
         if (result is null)
             return Conflict("Seat cannot be confirmed.");
@@ -74,20 +75,20 @@ public class AvailabilityController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("{flightId}/release-seat")]
+    [HttpDelete("{flightId}/seats/{seatNumber}/hold")]
     [Authorize(Roles = "Admin,Customer")]
-    public async Task<IActionResult> ReleaseSeat(string flightId, [FromBody] ReleaseSeatRequestDto request)
+    public async Task<IActionResult> DeleteSeatHold(string flightId, string seatNumber)
     {
-        if (!ModelState.IsValid)
-            return ValidationProblem(ModelState);
-
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrWhiteSpace(userId))
             return Unauthorized();
 
         var allowAnyUser = User.IsInRole("Admin");
-        var success = await _availabilityService.ReleaseSeatAsync(flightId, request, userId, allowAnyUser);
+        var success = await _availabilityService.ReleaseSeatAsync(flightId, new ReleaseSeatRequestDto
+        {
+            SeatNumber = seatNumber
+        }, userId, allowAnyUser);
 
         if (!success)
             return Conflict("Seat cannot be released.");

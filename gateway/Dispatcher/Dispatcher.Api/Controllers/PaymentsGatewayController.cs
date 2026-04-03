@@ -30,17 +30,10 @@ public class PaymentsGatewayController : DispatcherProxyControllerBase
         return ForwardAsync($"/api/payments/{id}", HttpMethods.Get);
     }
 
-    [HttpPost("{id}/complete")]
+    [HttpPatch("{id}")]
     [Authorize(Roles = "Admin,Customer")]
-    public Task<IActionResult> Complete(string id)
+    public Task<IActionResult> UpdateStatus(string id, [FromBody] UpdatePaymentStatusDto request)
     {
-        return ForwardAsync($"/api/payments/{id}/complete", HttpMethods.Post);
-    }
-
-    [HttpPost("{id}/fail")]
-    [Authorize(Roles = "Admin,Customer")]
-    public Task<IActionResult> Fail(string id)
-    {
-        return ForwardAsync($"/api/payments/{id}/fail", HttpMethods.Post);
+        return ForwardAsync($"/api/payments/{id}", HttpMethods.Patch, request);
     }
 }
