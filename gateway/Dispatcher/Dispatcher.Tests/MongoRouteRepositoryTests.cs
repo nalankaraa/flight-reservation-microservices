@@ -86,6 +86,39 @@ public class MongoRouteRepositoryTests : IDisposable
         result.Should().BeNull();
     }
 
+    [Fact]
+    public async Task UpsertRouteAsync_ExistingRoute_UpdatesTargetBaseUrl()
+    {
+        var repository = new MongoRouteRepository(_database);
+
+        await repository.AddRouteAsync(new RouteDefinition
+        {
+            Id = Guid.NewGuid().ToString(),
+            PathPrefix = "/api/flights",
+            HttpMethod = "GET",
+            TargetServiceName = "FlightService",
+            TargetBaseUrl = "http://localhost:5162",
+            RequiresAuth = true,
+            AllowedRoles = new List<string> { "Admin", "Customer" }
+        });
+
+        await repository.UpsertRouteAsync(new RouteDefinition
+        {
+            Id = Guid.NewGuid().ToString(),
+            PathPrefix = "/api/flights",
+            HttpMethod = "GET",
+            TargetServiceName = "FlightService",
+            TargetBaseUrl = "http://flightservice:8080",
+            RequiresAuth = true,
+            AllowedRoles = new List<string> { "Admin", "Customer" }
+        });
+
+        var result = await repository.FindRouteAsync("/api/flights", "GET");
+
+        result.Should().NotBeNull();
+        result!.TargetBaseUrl.Should().Be("http://flightservice:8080");
+    }
+
     public void Dispose()
     {
         _runner.Dispose();
