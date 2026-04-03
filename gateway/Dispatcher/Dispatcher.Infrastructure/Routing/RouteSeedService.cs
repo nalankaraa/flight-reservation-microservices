@@ -21,8 +21,8 @@ public class RouteSeedService
         var flightBaseUrl = _configuration["Services:Flight:BaseUrl"] ?? "http://localhost:5162";
         var reservationBaseUrl = _configuration["Services:Reservation:BaseUrl"] ?? "http://localhost:5029";
         var availabilityBaseUrl = _configuration["Services:Availability:BaseUrl"] ?? "http://localhost:5099";
-        var paymentBaseUrl = _configuration["Services:Payment:BaseUrl"] ?? "http://localhost:5110";
-        var notificationBaseUrl = _configuration["Services:Notification:BaseUrl"] ?? "http://localhost:5270";
+        var paymentBaseUrl = _configuration["Services:Payment:BaseUrl"] ?? "http://localhost:5088";
+        var notificationBaseUrl = _configuration["Services:Notification:BaseUrl"] ?? "http://localhost:5118";
 
         await AddRouteAsync("/api/auth/register", "POST", "AuthService", authBaseUrl, false);
         await AddRouteAsync("/api/auth/login", "POST", "AuthService", authBaseUrl, false);
