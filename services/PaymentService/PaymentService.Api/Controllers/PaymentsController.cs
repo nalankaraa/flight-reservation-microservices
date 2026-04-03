@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using PaymentService.Application.Dtos;
 using PaymentService.Application.Services;
 using BuildingBlocks.Application.Hateoas;
+using System.Security.Claims;
 
 namespace PaymentService.Api.Controllers;
 
@@ -40,6 +41,9 @@ public class PaymentsController : ControllerBase
         if (result is null)
             return NotFound();
 
+        if (!CanAccessPayment(result))
+            return Forbid();
+
         AttachLinks(result);
         return Ok(result);
     }
@@ -50,6 +54,14 @@ public class PaymentsController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        var payment = await _paymentService.GetByIdAsync(id);
+
+        if (payment is null)
+            return NotFound();
+
+        if (!CanAccessPayment(payment))
+            return Forbid();
 
         var normalizedStatus = request.Status.Trim();
         bool success;
@@ -71,6 +83,17 @@ public class PaymentsController : ControllerBase
             return BadRequest("Payment status cannot be updated.");
 
         return NoContent();
+    }
+
+    private bool CanAccessPayment(PaymentResponseDto payment)
+    {
+        if (User.IsInRole("Admin"))
+            return true;
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        return !string.IsNullOrWhiteSpace(userId)
+               && string.Equals(payment.UserId, userId, StringComparison.Ordinal);
     }
 
     private static void AttachLinks(PaymentResponseDto payment)
