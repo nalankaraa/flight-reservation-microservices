@@ -27,6 +27,7 @@ public class PaymentServiceTests
         result.ReservationId.Should().Be("reservation-1");
         result.Amount.Should().Be(2500);
         result.Status.Should().Be("Pending");
+        result.Links.Should().BeEmpty();
         repository.Payments.Should().ContainSingle();
     }
 

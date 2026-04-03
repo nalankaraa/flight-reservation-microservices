@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using PaymentService.Application.Dtos;
 using PaymentService.Application.Services;
+using BuildingBlocks.Application.Hateoas;
 
 namespace PaymentService.Api.Controllers;
 
@@ -26,6 +27,7 @@ public class PaymentsController : ControllerBase
 
         var result = await _paymentService.CreateAsync(request);
 
+        AttachLinks(result);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -38,6 +40,7 @@ public class PaymentsController : ControllerBase
         if (result is null)
             return NotFound();
 
+        AttachLinks(result);
         return Ok(result);
     }
 
@@ -63,5 +66,20 @@ public class PaymentsController : ControllerBase
             return BadRequest("Payment cannot be failed.");
 
         return NoContent();
+    }
+
+    private static void AttachLinks(PaymentResponseDto payment)
+    {
+        payment.Links =
+        [
+            new LinkDto { Rel = "self", Href = $"/api/payments/{payment.Id}", Method = "GET" },
+            new LinkDto { Rel = "reservation", Href = $"/api/reservations/{payment.ReservationId}", Method = "GET" }
+        ];
+
+        if (payment.Status == "Pending")
+        {
+            payment.Links.Add(new LinkDto { Rel = "complete", Href = $"/api/payments/{payment.Id}/complete", Method = "POST" });
+            payment.Links.Add(new LinkDto { Rel = "fail", Href = $"/api/payments/{payment.Id}/fail", Method = "POST" });
+        }
     }
 }

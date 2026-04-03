@@ -28,6 +28,7 @@ public class ReservationServiceTests
         result.FlightId.Should().Be("flight-1");
         result.PassengerName.Should().Be("Beyza");
         result.SeatNumber.Should().Be("12A");
+        result.Links.Should().BeEmpty();
     }
 
     [Fact]
@@ -74,6 +75,25 @@ public class ReservationServiceTests
         result.Should().HaveCount(1);
         result[0].UserId.Should().Be("user-1");
         result[0].FlightId.Should().Be("flight-1");
+    }
+
+    [Fact]
+    public async Task GetById_Should_Return_Reservation_When_It_Exists()
+    {
+        var repository = new FakeReservationRepository();
+        var service = new ReservationAppService(repository, new FakeSeatAvailabilityClient());
+
+        var created = await service.CreateAsync(new CreateReservationDto
+        {
+            FlightId = "flight-1",
+            PassengerName = "Ali",
+            SeatNumber = "10B"
+        }, "user-1", "Bearer token");
+
+        var result = await service.GetByIdAsync(created.Id!);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(created.Id);
     }
 
     [Fact]

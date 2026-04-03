@@ -1,3 +1,5 @@
+using BuildingBlocks.Application.Hateoas;
+
 namespace PaymentService.Application.Dtos;
 
 public class PaymentResponseDto
@@ -7,4 +9,5 @@ public class PaymentResponseDto
     public decimal Amount { get; set; }
     public string Status { get; set; } = default!;
     public DateTime CreatedAtUtc { get; set; }
+    public List<LinkDto> Links { get; set; } = [];
 }

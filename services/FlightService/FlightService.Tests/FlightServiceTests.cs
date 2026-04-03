@@ -27,6 +27,7 @@ public class FlightServiceTests
         result.Should().NotBeNull();
         result.From.Should().Be("IST");
         result.To.Should().Be("ANK");
+        result.Links.Should().BeEmpty();
         repository.Flights.Should().ContainSingle();
     }
 

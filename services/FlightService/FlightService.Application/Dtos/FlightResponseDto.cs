@@ -1,3 +1,5 @@
+using BuildingBlocks.Application.Hateoas;
+
 namespace FlightService.Application.Dtos;
 
 public class FlightResponseDto
@@ -9,4 +11,5 @@ public class FlightResponseDto
     public DateTime ArrivalTime { get; set; }
     public decimal Price { get; set; }
     public int AvailableSeatCount { get; set; }
+    public List<LinkDto> Links { get; set; } = [];
 }

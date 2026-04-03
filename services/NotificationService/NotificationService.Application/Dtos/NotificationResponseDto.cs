@@ -1,3 +1,5 @@
+using BuildingBlocks.Application.Hateoas;
+
 namespace NotificationService.Application.Dtos;
 
 public class NotificationResponseDto
@@ -10,4 +12,5 @@ public class NotificationResponseDto
     public DateTime CreatedAtUtc { get; set; }
     public bool IsRead { get; set; }
     public bool IsSent { get; set; }
+    public List<LinkDto> Links { get; set; } = [];
 }

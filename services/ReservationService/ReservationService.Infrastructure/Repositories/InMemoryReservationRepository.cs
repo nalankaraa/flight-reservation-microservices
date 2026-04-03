@@ -37,6 +37,11 @@ public class InMemoryReservationRepository : IReservationRepository
         return Task.FromResult(_reservations.ToList());
     }
 
+    public Task<Reservation?> GetByIdAsync(string id)
+    {
+        return Task.FromResult(_reservations.FirstOrDefault(x => x.Id == id));
+    }
+
     public Task<List<Reservation>> GetByUserIdAsync(string userId)
     {
         return Task.FromResult(_reservations.Where(x => x.UserId == userId).ToList());
