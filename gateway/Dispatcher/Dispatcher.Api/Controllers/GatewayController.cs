@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Dispatcher.Api.Controllers;
 
 [ApiController]
+[ApiExplorerSettings(IgnoreApi = true)]
 [Route("api/{**catchAll}")]
 public class GatewayController : ControllerBase
 {

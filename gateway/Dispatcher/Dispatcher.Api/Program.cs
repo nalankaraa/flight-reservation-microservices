@@ -8,6 +8,7 @@ using Dispatcher.Infrastructure.Logging;
 using Dispatcher.Infrastructure.Routing;
 using BuildingBlocks.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 
@@ -17,6 +18,11 @@ var mongoConnectionString = mongoSettings["ConnectionString"] ?? "mongodb://loca
 var mongoDatabaseName = mongoSettings["DatabaseName"] ?? "dispatcher-db";
 
 builder.Services.AddControllers();
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    // Dispatcher is a transparent gateway; downstream services remain responsible for payload validation.
+    options.SuppressModelStateInvalidFilter = true;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
