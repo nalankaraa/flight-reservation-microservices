@@ -1,5 +1,6 @@
 using ReservationService.Application.Clients;
 using ReservationService.Application.Dtos;
+using ReservationService.Application.Exceptions;
 using ReservationService.Application.Repositories;
 using ReservationService.Domain.Entities;
 
@@ -71,7 +72,15 @@ public class ReservationService : IReservationService
             SeatNumber = normalizedSeatNumber
         };
 
-        await _repository.AddAsync(reservation);
+        try
+        {
+            await _repository.AddAsync(reservation);
+        }
+        catch (DuplicateSeatReservationException)
+        {
+            await _seatAvailabilityClient.ReleaseSeatAsync(request.FlightId, normalizedSeatNumber, authorizationHeader);
+            return BuildSeatConflict(request.FlightId, normalizedSeatNumber);
+        }
 
         var seatConfirmation = await _seatAvailabilityClient.ConfirmSeatAsync(
             request.FlightId,
@@ -111,21 +120,48 @@ public class ReservationService : IReservationService
     {
         var reservations = await _repository.GetAllAsync();
 
-        return reservations.Select(MapToDto).ToList();
+        return reservations.Select(r => new ReservationResponseDto
+        {
+            Success = true,
+            Id = r.Id,
+            UserId = r.UserId,
+            FlightId = r.FlightId,
+            PassengerName = r.PassengerName,
+            SeatNumber = r.SeatNumber
+        }).ToList();
     }
 
     public async Task<ReservationResponseDto?> GetByIdAsync(string id)
     {
         var reservation = await _repository.GetByIdAsync(id);
 
-        return reservation is null ? null : MapToDto(reservation);
+        if (reservation is null)
+            return null;
+
+        return new ReservationResponseDto
+        {
+            Success = true,
+            Id = reservation.Id,
+            UserId = reservation.UserId,
+            FlightId = reservation.FlightId,
+            PassengerName = reservation.PassengerName,
+            SeatNumber = reservation.SeatNumber
+        };
     }
 
     public async Task<List<ReservationResponseDto>> GetMineAsync(string userId)
     {
         var reservations = await _repository.GetByUserIdAsync(userId);
 
-        return reservations.Select(MapToDto).ToList();
+        return reservations.Select(r => new ReservationResponseDto
+        {
+            Success = true,
+            Id = r.Id,
+            UserId = r.UserId,
+            FlightId = r.FlightId,
+            PassengerName = r.PassengerName,
+            SeatNumber = r.SeatNumber
+        }).ToList();
     }
 
     private static ReservationResponseDto BuildSeatConflict(string flightId, string seatNumber)
@@ -137,19 +173,6 @@ public class ReservationService : IReservationService
             FlightId = flightId,
             SeatNumber = seatNumber,
             Message = "The selected seat is already reserved."
-        };
-    }
-
-    private static ReservationResponseDto MapToDto(Reservation reservation)
-    {
-        return new ReservationResponseDto
-        {
-            Success = true,
-            Id = reservation.Id,
-            UserId = reservation.UserId,
-            FlightId = reservation.FlightId,
-            PassengerName = reservation.PassengerName,
-            SeatNumber = reservation.SeatNumber
         };
     }
 }
