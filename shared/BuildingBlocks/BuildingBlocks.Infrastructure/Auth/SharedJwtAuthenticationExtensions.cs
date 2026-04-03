@@ -16,7 +16,8 @@ public static class SharedJwtAuthenticationExtensions
         {
             Key = jwtSection["Key"] ?? throw new InvalidOperationException("Jwt:Key is required."),
             Issuer = jwtSection["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is required."),
-            Audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is required.")
+            Audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is required."),
+            ExpiresInMinutes = int.TryParse(jwtSection["ExpiresInMinutes"], out var expires) ? expires : 60
         };
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -31,7 +32,7 @@ public static class SharedJwtAuthenticationExtensions
                     ValidIssuer = jwtOptions.Issuer,
                     ValidAudience = jwtOptions.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
-                    ClockSkew = TimeSpan.FromMinutes(1)
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 

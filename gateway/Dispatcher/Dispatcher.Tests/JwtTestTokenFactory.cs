@@ -1,30 +1,39 @@
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Dispatcher.Tests;
 
 public static class JwtTestTokenFactory
 {
-    public static string CreateToken(params string[] roles)
+    private const string Key = "ReplaceThisWithAStrongSecretKeyForDevelopment123!";
+    private const string Issuer = "AuthService";
+    private const string Audience = "Dispatcher";
+
+    public static string CreateToken(string role)
+    {
+        return CreateToken(role, DateTime.UtcNow.AddHours(1));
+    }
+
+    public static string CreateToken(string role, DateTime expiresUtc)
     {
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, "user-1"),
-            new(ClaimTypes.Email, "user@example.com")
+            new(ClaimTypes.Email, "test@mail.com"),
+            new(ClaimTypes.Role, role)
         };
 
-        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ReplaceThisWithAStrongSecretKeyForDevelopment123!"));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var credentials = new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key)),
+            SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: "AuthService",
-            audience: "Dispatcher",
+            issuer: Issuer,
+            audience: Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
+            expires: expiresUtc,
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
