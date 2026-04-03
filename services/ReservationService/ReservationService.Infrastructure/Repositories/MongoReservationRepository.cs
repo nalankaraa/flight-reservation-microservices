@@ -1,4 +1,3 @@
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using ReservationService.Application.Exceptions;
 using ReservationService.Application.Repositories;
@@ -8,26 +7,34 @@ namespace ReservationService.Infrastructure.Repositories;
 
 public class MongoReservationRepository : IReservationRepository
 {
-    private readonly IMongoCollection<ReservationDocument> _collection;
+    private readonly IMongoCollection<Reservation> _reservations;
 
     public MongoReservationRepository(IMongoDatabase database)
     {
-        _collection = database.GetCollection<ReservationDocument>("reservations");
+        _reservations = database.GetCollection<Reservation>("reservations");
 
-        var indexKeys = Builders<ReservationDocument>.IndexKeys
+        var indexKeys = Builders<Reservation>.IndexKeys
             .Ascending(x => x.FlightId)
             .Ascending(x => x.SeatNumber);
 
-        _collection.Indexes.CreateOne(new CreateIndexModel<ReservationDocument>(
+        var indexModel = new CreateIndexModel<Reservation>(
             indexKeys,
-            new CreateIndexOptions { Unique = true }));
+            new CreateIndexOptions
+            {
+                Unique = true,
+                Name = "ux_flight_seat"
+            });
+
+        _reservations.Indexes.CreateOne(indexModel);
     }
 
     public async Task AddAsync(Reservation reservation)
     {
+        NormalizeReservation(reservation);
+
         try
         {
-            await _collection.InsertOneAsync(MapToDocument(reservation));
+            await _reservations.InsertOneAsync(reservation);
         }
         catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -37,69 +44,40 @@ public class MongoReservationRepository : IReservationRepository
 
     public async Task DeleteAsync(string reservationId)
     {
-        await _collection.DeleteOneAsync(x => x.Id == reservationId);
+        await _reservations.DeleteOneAsync(x => x.Id == reservationId);
     }
 
     public async Task<bool> ExistsByFlightAndSeatAsync(string flightId, string seatNumber)
     {
-        return await _collection.Find(x =>
+        var normalizedSeatNumber = NormalizeSeatNumber(seatNumber);
+
+        return await _reservations.Find(x =>
             x.FlightId == flightId &&
-            x.SeatNumber == seatNumber).AnyAsync();
+            x.SeatNumber == normalizedSeatNumber).AnyAsync();
     }
 
     public async Task<List<Reservation>> GetAllAsync()
     {
-        var docs = await _collection.Find(_ => true).ToListAsync();
-        return docs.Select(MapToDomain).ToList();
+        return await _reservations.Find(_ => true).ToListAsync();
     }
 
     public async Task<Reservation?> GetByIdAsync(string id)
     {
-        var doc = await _collection.Find(x => x.Id == id).FirstOrDefaultAsync();
-
-        if (doc is null)
-            return null;
-
-        return MapToDomain(doc);
+        return await _reservations.Find(x => x.Id == id).FirstOrDefaultAsync();
     }
 
     public async Task<List<Reservation>> GetByUserIdAsync(string userId)
     {
-        var docs = await _collection.Find(x => x.UserId == userId).ToListAsync();
-        return docs.Select(MapToDomain).ToList();
+        return await _reservations.Find(x => x.UserId == userId).ToListAsync();
     }
 
-    private static ReservationDocument MapToDocument(Reservation reservation)
+    private static void NormalizeReservation(Reservation reservation)
     {
-        return new ReservationDocument
-        {
-            Id = reservation.Id,
-            UserId = reservation.UserId,
-            FlightId = reservation.FlightId,
-            PassengerName = reservation.PassengerName,
-            SeatNumber = reservation.SeatNumber
-        };
+        reservation.SeatNumber = NormalizeSeatNumber(reservation.SeatNumber);
     }
 
-    private static Reservation MapToDomain(ReservationDocument doc)
+    private static string NormalizeSeatNumber(string seatNumber)
     {
-        return new Reservation
-        {
-            Id = doc.Id,
-            UserId = doc.UserId,
-            FlightId = doc.FlightId,
-            PassengerName = doc.PassengerName,
-            SeatNumber = doc.SeatNumber
-        };
-    }
-
-    private class ReservationDocument
-    {
-        [BsonId]
-        public string Id { get; set; } = default!;
-        public string UserId { get; set; } = default!;
-        public string FlightId { get; set; } = default!;
-        public string PassengerName { get; set; } = default!;
-        public string SeatNumber { get; set; } = default!;
+        return seatNumber.Trim().ToUpperInvariant();
     }
 }

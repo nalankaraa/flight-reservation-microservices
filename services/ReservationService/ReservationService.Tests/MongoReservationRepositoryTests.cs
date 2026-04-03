@@ -1,28 +1,24 @@
 using FluentAssertions;
-using Mongo2Go;
-using MongoDB.Driver;
 using ReservationService.Application.Exceptions;
 using ReservationService.Domain.Entities;
 using ReservationService.Infrastructure.Repositories;
 
 namespace ReservationService.Tests;
 
-public class MongoReservationRepositoryTests : IDisposable
+public class MongoReservationRepositoryTests : IClassFixture<MongoReservationTestFixture>
 {
-    private readonly MongoDbRunner _runner;
-    private readonly IMongoDatabase _database;
+    private readonly MongoReservationTestFixture _fixture;
 
-    public MongoReservationRepositoryTests()
+    public MongoReservationRepositoryTests(MongoReservationTestFixture fixture)
     {
-        _runner = MongoDbRunner.Start();
-        var client = new MongoClient(_runner.ConnectionString);
-        _database = client.GetDatabase("reservation-test-db");
+        _fixture = fixture;
     }
 
     [Fact]
     public async Task AddAsync_Should_Persist_Reservation()
     {
-        var repository = new MongoReservationRepository(_database);
+        var database = _fixture.CreateDatabase();
+        var repository = new MongoReservationRepository(database);
 
         await repository.AddAsync(new Reservation
         {
@@ -42,7 +38,8 @@ public class MongoReservationRepositoryTests : IDisposable
     [Fact]
     public async Task AddAsync_Should_Throw_DuplicateSeatReservationException_For_Same_Flight_And_Seat()
     {
-        var repository = new MongoReservationRepository(_database);
+        var database = _fixture.CreateDatabase();
+        var repository = new MongoReservationRepository(database);
 
         await repository.AddAsync(new Reservation
         {
@@ -65,8 +62,30 @@ public class MongoReservationRepositoryTests : IDisposable
         await act.Should().ThrowAsync<DuplicateSeatReservationException>();
     }
 
-    public void Dispose()
+    [Fact]
+    public async Task AddAsync_Should_Treat_SeatNumber_As_CaseInsensitive_For_Duplicates()
     {
-        _runner.Dispose();
+        var database = _fixture.CreateDatabase();
+        var repository = new MongoReservationRepository(database);
+
+        await repository.AddAsync(new Reservation
+        {
+            Id = "1",
+            UserId = "user-1",
+            FlightId = "flight-1",
+            PassengerName = "Ali",
+            SeatNumber = "10b"
+        });
+
+        var act = async () => await repository.AddAsync(new Reservation
+        {
+            Id = "2",
+            UserId = "user-2",
+            FlightId = "flight-1",
+            PassengerName = "Ayse",
+            SeatNumber = "10B"
+        });
+
+        await act.Should().ThrowAsync<DuplicateSeatReservationException>();
     }
 }
