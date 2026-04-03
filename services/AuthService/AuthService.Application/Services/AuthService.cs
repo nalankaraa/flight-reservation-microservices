@@ -6,11 +6,7 @@ namespace AuthService.Application.Services;
 
 public class AuthService : IAuthService
 {
-    private static readonly HashSet<string> AllowedRoles = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Admin",
-        "Customer"
-    };
+    private const string PublicRegistrationRole = "Customer";
 
     private readonly IUserRepository _repository;
     private readonly ITokenService _tokenService;
@@ -39,12 +35,12 @@ public class AuthService : IAuthService
             };
         }
 
-        if (!AllowedRoles.Contains(request.Role))
+        if (!string.Equals(request.Role, PublicRegistrationRole, StringComparison.OrdinalIgnoreCase))
         {
             return new AuthResponseDto
             {
                 Success = false,
-                Message = "Role must be either Admin or Customer."
+                Message = "Public registration only supports the Customer role."
             };
         }
 
@@ -63,7 +59,7 @@ public class AuthService : IAuthService
         {
             Email = request.Email.Trim().ToLowerInvariant(),
             PasswordHash = _passwordHasher.HashPassword(request.Password),
-            Role = NormalizeRole(request.Role)
+            Role = PublicRegistrationRole
         };
 
         await _repository.AddAsync(user);
@@ -117,11 +113,6 @@ public class AuthService : IAuthService
     {
         var user = await _repository.GetByIdAsync(userId);
         return user is null ? null : MapToProfile(user);
-    }
-
-    private static string NormalizeRole(string role)
-    {
-        return AllowedRoles.First(r => string.Equals(r, role, StringComparison.OrdinalIgnoreCase));
     }
 
     private static UserProfileDto MapToProfile(User user)

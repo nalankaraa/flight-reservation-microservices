@@ -124,6 +124,26 @@ public class AuthServiceTests
         });
 
         result.Success.Should().BeFalse();
-        result.Message.Should().Be("Role must be either Admin or Customer.");
+        result.Message.Should().Be("Public registration only supports the Customer role.");
+    }
+
+    [Fact]
+    public async Task Register_Should_Return_Failure_When_Public_Request_Tries_To_Create_Admin()
+    {
+        var repository = new FakeUserRepository();
+        var tokenService = new FakeTokenService();
+        var passwordHasher = new FakePasswordHasher();
+        var service = new AuthService.Application.Services.AuthService(repository, tokenService, passwordHasher);
+
+        var result = await service.RegisterAsync(new AuthService.Application.Dtos.RegisterRequestDto
+        {
+            Email = "admin@mail.com",
+            Password = "12345678",
+            Role = "Admin"
+        });
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Public registration only supports the Customer role.");
+        repository.Users.Should().BeEmpty();
     }
 }
