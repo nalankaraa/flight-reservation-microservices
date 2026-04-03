@@ -90,6 +90,18 @@ public class ReservationController : ControllerBase
                 return StatusCode(StatusCodes.Status503ServiceUnavailable, result);
             }
 
+            if (result.ErrorCode == "PaymentUnavailable")
+            {
+                AttachFailureLinks(result);
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, result);
+            }
+
+            if (result.ErrorCode == "FlightNotFound")
+            {
+                AttachFailureLinks(result);
+                return NotFound(result);
+            }
+
             AttachFailureLinks(result);
             return BadRequest(result);
         }
@@ -107,9 +119,13 @@ public class ReservationController : ControllerBase
         [
             new LinkDto { Rel = "self", Href = $"/api/reservations/{reservation.Id}", Method = "GET" },
             new LinkDto { Rel = "flight", Href = $"/api/flights/{reservation.FlightId}", Method = "GET" },
-            new LinkDto { Rel = "payment", Href = "/api/payments", Method = "POST" },
             new LinkDto { Rel = "my-reservations", Href = "/api/reservations/my", Method = "GET" }
         ];
+
+        if (!string.IsNullOrWhiteSpace(reservation.PaymentId))
+        {
+            reservation.Links.Add(new LinkDto { Rel = "payment", Href = $"/api/payments/{reservation.PaymentId}", Method = "GET" });
+        }
     }
 
     private static void AttachFailureLinks(ReservationResponseDto reservation)

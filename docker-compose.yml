@@ -88,6 +88,8 @@ services:
       Mongo__ConnectionString: mongodb://reservation-db:27017
       Mongo__DatabaseName: reservation-db
       Services__Availability__BaseUrl: http://availabilityservice:8080/
+      Services__Flight__BaseUrl: http://flightservice:8080/
+      Services__Payment__BaseUrl: http://paymentservice:8080/
     expose:
       - "8080"
     networks:
@@ -128,6 +130,7 @@ services:
       Jwt__Audience: Dispatcher
       Mongo__ConnectionString: mongodb://payment-db:27017
       Mongo__DatabaseName: payment-db
+      Services__Notification__BaseUrl: http://notificationservice:8080/
     expose:
       - "8080"
     networks:
