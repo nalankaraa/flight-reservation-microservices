@@ -37,8 +37,15 @@ builder.Services.AddScoped<IUserRepository, MongoUserRepository>();
 builder.Services.AddSingleton<ITokenService, SimpleTokenService>();
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IAuthService, AuthService.Application.Services.AuthService>();
+builder.Services.AddScoped<AdminSeedService>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var adminSeedService = scope.ServiceProvider.GetRequiredService<AdminSeedService>();
+    await adminSeedService.SeedAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
