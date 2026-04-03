@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using PaymentService.Application.Dtos;
 using PaymentService.Application.Services;
 using BuildingBlocks.Application.Hateoas;
+using System.Security.Claims;
 
 namespace PaymentService.Api.Controllers;
 
@@ -25,6 +26,16 @@ public class PaymentsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
+
+        if (!User.IsInRole("Admin"))
+        {
+            request.UserId = userId;
+        }
+
         var result = await _paymentService.CreateAsync(request);
 
         AttachLinks(result);
@@ -40,6 +51,15 @@ public class PaymentsController : ControllerBase
         if (result is null)
             return NotFound();
 
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
+
+        if (!isAdmin && result.UserId != userId)
+            return Forbid();
+
         AttachLinks(result);
         return Ok(result);
     }
@@ -50,6 +70,20 @@ public class PaymentsController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        var payment = await _paymentService.GetByIdAsync(id);
+
+        if (payment is null)
+            return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
+
+        if (!isAdmin && payment.UserId != userId)
+            return Forbid();
 
         var normalizedStatus = request.Status.Trim();
         bool success;
