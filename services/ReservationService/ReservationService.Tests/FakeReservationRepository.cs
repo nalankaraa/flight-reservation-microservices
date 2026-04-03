@@ -1,3 +1,4 @@
+using ReservationService.Application.Exceptions;
 using ReservationService.Application.Repositories;
 using ReservationService.Domain.Entities;
 
@@ -6,9 +7,13 @@ namespace ReservationService.Tests;
 public class FakeReservationRepository : IReservationRepository
 {
     private readonly List<Reservation> _reservations = new();
+    public bool ThrowDuplicateOnAdd { get; set; }
 
     public Task AddAsync(Reservation reservation)
     {
+        if (ThrowDuplicateOnAdd)
+            throw new DuplicateSeatReservationException("Duplicate seat");
+
         _reservations.Add(reservation);
         return Task.CompletedTask;
     }
@@ -34,12 +39,13 @@ public class FakeReservationRepository : IReservationRepository
 
     public Task<List<Reservation>> GetAllAsync()
     {
-        return Task.FromResult(_reservations);
+        return Task.FromResult(_reservations.ToList());
     }
 
     public Task<Reservation?> GetByIdAsync(string id)
     {
-        return Task.FromResult(_reservations.FirstOrDefault(x => x.Id == id));
+        var reservation = _reservations.FirstOrDefault(x => x.Id == id);
+        return Task.FromResult(reservation);
     }
 
     public Task<List<Reservation>> GetByUserIdAsync(string userId)
