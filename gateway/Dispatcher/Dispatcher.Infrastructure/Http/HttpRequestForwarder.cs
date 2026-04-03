@@ -34,10 +34,8 @@ public class HttpRequestForwarder : IRequestForwarder
                 continue;
             }
 
-            if (request.Content is not null &&
-                header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
+            if (TryAddContentHeader(request, header))
             {
-                request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 continue;
             }
 
@@ -49,6 +47,18 @@ public class HttpRequestForwarder : IRequestForwarder
         }
 
         return _httpClient.SendAsync(request);
+    }
+
+    private static bool TryAddContentHeader(HttpRequestMessage request, KeyValuePair<string, string> header)
+    {
+        if (request.Content is null)
+            return false;
+
+        if (!header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        return true;
     }
 
     private static bool HttpMethodAllowsBody(string method)
