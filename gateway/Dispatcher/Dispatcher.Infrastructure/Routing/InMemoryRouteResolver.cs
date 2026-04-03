@@ -29,6 +29,46 @@ public class InMemoryRouteResolver : IRouteResolver
                 TargetBaseUrl = "http://localhost:5162",
                 RequiresAuth = true,
                 AllowedRoles = new List<string> { "Admin" }
+            },
+            new RouteDefinition
+            {
+                Id = Guid.NewGuid().ToString(),
+                PathPrefix = "/api/payments",
+                HttpMethod = "GET",
+                TargetServiceName = "PaymentService",
+                TargetBaseUrl = "http://localhost:5110",
+                RequiresAuth = true,
+                AllowedRoles = new List<string> { "Admin", "Customer" }
+            },
+            new RouteDefinition
+            {
+                Id = Guid.NewGuid().ToString(),
+                PathPrefix = "/api/payments",
+                HttpMethod = "POST",
+                TargetServiceName = "PaymentService",
+                TargetBaseUrl = "http://localhost:5110",
+                RequiresAuth = true,
+                AllowedRoles = new List<string> { "Admin", "Customer" }
+            },
+            new RouteDefinition
+            {
+                Id = Guid.NewGuid().ToString(),
+                PathPrefix = "/api/notifications",
+                HttpMethod = "GET",
+                TargetServiceName = "NotificationService",
+                TargetBaseUrl = "http://localhost:5270",
+                RequiresAuth = true,
+                AllowedRoles = new List<string> { "Admin", "Customer" }
+            },
+            new RouteDefinition
+            {
+                Id = Guid.NewGuid().ToString(),
+                PathPrefix = "/api/notifications",
+                HttpMethod = "POST",
+                TargetServiceName = "NotificationService",
+                TargetBaseUrl = "http://localhost:5270",
+                RequiresAuth = true,
+                AllowedRoles = new List<string> { "Admin", "Customer" }
             }
         };
     }

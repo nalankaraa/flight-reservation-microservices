@@ -4,8 +4,12 @@ using FlightService.Infrastructure.Repositories;
 using BuildingBlocks.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
+var mongoSettings = builder.Configuration.GetSection("Mongo");
+var mongoConnectionString = mongoSettings["ConnectionString"] ?? throw new InvalidOperationException("Mongo:ConnectionString is required.");
+var mongoDatabaseName = mongoSettings["DatabaseName"] ?? throw new InvalidOperationException("Mongo:DatabaseName is required.");
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -43,8 +47,14 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddSharedJwtAuthentication(builder.Configuration);
+builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    return client.GetDatabase(mongoDatabaseName);
+});
 
-builder.Services.AddSingleton<IFlightRepository, InMemoryFlightRepository>();
+builder.Services.AddScoped<IFlightRepository, MongoFlightRepository>();
 builder.Services.AddScoped<IFlightService, FlightService.Application.Services.FlightService>();
 
 var app = builder.Build();
