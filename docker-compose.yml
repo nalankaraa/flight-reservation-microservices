@@ -1,0 +1,219 @@
+services:
+  dispatcher:
+    build:
+      context: .
+      dockerfile: gateway/Dispatcher/Dispatcher.Api/Dockerfile
+    container_name: dispatcher
+    depends_on:
+      - dispatcher-db
+      - authservice
+      - flightservice
+      - reservationservice
+      - availabilityservice
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: ReplaceThisWithAStrongSecretKeyForDevelopment123!
+      Jwt__Issuer: AuthService
+      Jwt__Audience: Dispatcher
+      Mongo__ConnectionString: mongodb://dispatcher-db:27017
+      Mongo__DatabaseName: dispatcher-db
+      Services__Auth__BaseUrl: http://authservice:8080
+      Services__Flight__BaseUrl: http://flightservice:8080
+      Services__Reservation__BaseUrl: http://reservationservice:8080
+      Services__Availability__BaseUrl: http://availabilityservice:8080
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+
+  authservice:
+    build:
+      context: .
+      dockerfile: services/AuthService/AuthService.Api/Dockerfile
+    container_name: authservice
+    depends_on:
+      - auth-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: ReplaceThisWithAStrongSecretKeyForDevelopment123!
+      Jwt__Issuer: AuthService
+      Jwt__Audience: Dispatcher
+      Mongo__ConnectionString: mongodb://auth-db:27017
+      Mongo__DatabaseName: auth-db
+    expose:
+      - "8080"
+    networks:
+      - backend
+
+  flightservice:
+    build:
+      context: .
+      dockerfile: services/FlightService/FlightService.Api/Dockerfile
+    container_name: flightservice
+    depends_on:
+      - flight-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: ReplaceThisWithAStrongSecretKeyForDevelopment123!
+      Jwt__Issuer: AuthService
+      Jwt__Audience: Dispatcher
+      Mongo__ConnectionString: mongodb://flight-db:27017
+      Mongo__DatabaseName: flight-db
+    expose:
+      - "8080"
+    networks:
+      - backend
+
+  reservationservice:
+    build:
+      context: .
+      dockerfile: services/ReservationService/ReservationService.Api/Dockerfile
+    container_name: reservationservice
+    depends_on:
+      - reservation-db
+      - availabilityservice
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: ReplaceThisWithAStrongSecretKeyForDevelopment123!
+      Jwt__Issuer: AuthService
+      Jwt__Audience: Dispatcher
+      Mongo__ConnectionString: mongodb://reservation-db:27017
+      Mongo__DatabaseName: reservation-db
+      Services__Availability__BaseUrl: http://availabilityservice:8080/
+    expose:
+      - "8080"
+    networks:
+      - backend
+
+  availabilityservice:
+    build:
+      context: .
+      dockerfile: services/AvailabilityService/AvailabilityService.Api/Dockerfile
+    container_name: availabilityservice
+    depends_on:
+      - availability-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: ReplaceThisWithAStrongSecretKeyForDevelopment123!
+      Jwt__Issuer: AuthService
+      Jwt__Audience: Dispatcher
+      Mongo__ConnectionString: mongodb://availability-db:27017
+      Mongo__DatabaseName: availability-db
+    expose:
+      - "8080"
+    networks:
+      - backend
+
+  paymentservice:
+    build:
+      context: .
+      dockerfile: services/PaymentService/PaymentService.Api/Dockerfile
+    container_name: paymentservice
+    depends_on:
+      - payment-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: ReplaceThisWithAStrongSecretKeyForDevelopment123!
+      Jwt__Issuer: AuthService
+      Jwt__Audience: Dispatcher
+      Mongo__ConnectionString: mongodb://payment-db:27017
+      Mongo__DatabaseName: payment-db
+    expose:
+      - "8080"
+    networks:
+      - backend
+
+  notificationservice:
+    build:
+      context: .
+      dockerfile: services/NotificationService/NotificationService.Api/Dockerfile
+    container_name: notificationservice
+    depends_on:
+      - notification-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: ReplaceThisWithAStrongSecretKeyForDevelopment123!
+      Jwt__Issuer: AuthService
+      Jwt__Audience: Dispatcher
+      Mongo__ConnectionString: mongodb://notification-db:27017
+      Mongo__DatabaseName: notification-db
+    expose:
+      - "8080"
+    networks:
+      - backend
+
+  dispatcher-db:
+    image: mongo:7.0
+    container_name: dispatcher-db
+    volumes:
+      - dispatcher-db-data:/data/db
+    networks:
+      - backend
+
+  auth-db:
+    image: mongo:7.0
+    container_name: auth-db
+    volumes:
+      - auth-db-data:/data/db
+    networks:
+      - backend
+
+  flight-db:
+    image: mongo:7.0
+    container_name: flight-db
+    volumes:
+      - flight-db-data:/data/db
+    networks:
+      - backend
+
+  reservation-db:
+    image: mongo:7.0
+    container_name: reservation-db
+    volumes:
+      - reservation-db-data:/data/db
+    networks:
+      - backend
+
+  availability-db:
+    image: mongo:7.0
+    container_name: availability-db
+    volumes:
+      - availability-db-data:/data/db
+    networks:
+      - backend
+
+  payment-db:
+    image: mongo:7.0
+    container_name: payment-db
+    volumes:
+      - payment-db-data:/data/db
+    networks:
+      - backend
+
+  notification-db:
+    image: mongo:7.0
+    container_name: notification-db
+    volumes:
+      - notification-db-data:/data/db
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  dispatcher-db-data:
+  auth-db-data:
+  flight-db-data:
+  reservation-db-data:
+  availability-db-data:
+  payment-db-data:
+  notification-db-data:

@@ -17,11 +17,6 @@ public class RouteSeedService
 
     public async Task SeedAsync()
     {
-        var existingRoutes = await _routeRepository.GetAllRoutesAsync();
-
-        if (existingRoutes.Any())
-            return;
-
         var authBaseUrl = _configuration["Services:Auth:BaseUrl"] ?? "http://localhost:5078";
         var flightBaseUrl = _configuration["Services:Flight:BaseUrl"] ?? "http://localhost:5162";
         var reservationBaseUrl = _configuration["Services:Reservation:BaseUrl"] ?? "http://localhost:5029";
@@ -52,7 +47,7 @@ public class RouteSeedService
         bool requiresAuth,
         params string[] allowedRoles)
     {
-        return _routeRepository.AddRouteAsync(new RouteDefinition
+        return _routeRepository.UpsertRouteAsync(new RouteDefinition
         {
             Id = Guid.NewGuid().ToString(),
             PathPrefix = pathPrefix,

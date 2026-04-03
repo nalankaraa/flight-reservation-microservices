@@ -53,6 +53,29 @@ public class MongoRouteRepository : IRouteRepository
         await _collection.InsertOneAsync(document);
     }
 
+    public async Task UpsertRouteAsync(RouteDefinition route)
+    {
+        var filter = Builders<RouteDefinitionDocument>.Filter.And(
+            Builders<RouteDefinitionDocument>.Filter.Eq(x => x.PathPrefix, route.PathPrefix),
+            Builders<RouteDefinitionDocument>.Filter.Eq(x => x.HttpMethod, route.HttpMethod));
+
+        var update = Builders<RouteDefinitionDocument>.Update
+            .Set(x => x.PathPrefix, route.PathPrefix)
+            .Set(x => x.HttpMethod, route.HttpMethod)
+            .Set(x => x.TargetServiceName, route.TargetServiceName)
+            .Set(x => x.TargetBaseUrl, route.TargetBaseUrl)
+            .Set(x => x.RequiresAuth, route.RequiresAuth)
+            .Set(x => x.AllowedRoles, route.AllowedRoles);
+
+        await _collection.UpdateOneAsync(
+            filter,
+            update,
+            new UpdateOptions
+            {
+                IsUpsert = true
+            });
+    }
+
     public async Task<List<RouteDefinition>> GetAllRoutesAsync()
     {
         var docs = await _collection.Find(_ => true).ToListAsync();
