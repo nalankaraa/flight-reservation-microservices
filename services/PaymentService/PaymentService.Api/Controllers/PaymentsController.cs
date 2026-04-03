@@ -44,26 +44,31 @@ public class PaymentsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("{id}/complete")]
+    [HttpPatch("{id}")]
     [Authorize(Roles = "Admin,Customer")]
-    public async Task<IActionResult> Complete(string id)
+    public async Task<IActionResult> UpdateStatus(string id, [FromBody] UpdatePaymentStatusDto request)
     {
-        var success = await _paymentService.CompleteAsync(id);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var normalizedStatus = request.Status.Trim();
+        bool success;
+
+        if (normalizedStatus.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+        {
+            success = await _paymentService.CompleteAsync(id);
+        }
+        else if (normalizedStatus.Equals("Failed", StringComparison.OrdinalIgnoreCase))
+        {
+            success = await _paymentService.FailAsync(id);
+        }
+        else
+        {
+            return BadRequest("Status must be either 'Completed' or 'Failed'.");
+        }
 
         if (!success)
-            return BadRequest("Payment cannot be completed.");
-
-        return NoContent();
-    }
-
-    [HttpPost("{id}/fail")]
-    [Authorize(Roles = "Admin,Customer")]
-    public async Task<IActionResult> Fail(string id)
-    {
-        var success = await _paymentService.FailAsync(id);
-
-        if (!success)
-            return BadRequest("Payment cannot be failed.");
+            return BadRequest("Payment status cannot be updated.");
 
         return NoContent();
     }
@@ -78,8 +83,7 @@ public class PaymentsController : ControllerBase
 
         if (payment.Status == "Pending")
         {
-            payment.Links.Add(new LinkDto { Rel = "complete", Href = $"/api/payments/{payment.Id}/complete", Method = "POST" });
-            payment.Links.Add(new LinkDto { Rel = "fail", Href = $"/api/payments/{payment.Id}/fail", Method = "POST" });
+            payment.Links.Add(new LinkDto { Rel = "update-status", Href = $"/api/payments/{payment.Id}", Method = "PATCH" });
         }
     }
 }

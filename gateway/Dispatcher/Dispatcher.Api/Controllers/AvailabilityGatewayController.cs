@@ -30,24 +30,24 @@ public class AvailabilityGatewayController : DispatcherProxyControllerBase
         return ForwardAsync($"/api/availability/{flightId}/seats", HttpMethods.Get);
     }
 
-    [HttpPost("{flightId}/lock-seat")]
+    [HttpPut("{flightId}/seats/{seatNumber}/hold")]
     [Authorize(Roles = "Admin,Customer")]
-    public Task<IActionResult> LockSeat(string flightId, [FromBody] LockSeatRequestDto request)
+    public Task<IActionResult> UpsertSeatHold(string flightId, string seatNumber, [FromBody] UpdateSeatHoldDto request)
     {
-        return ForwardAsync($"/api/availability/{flightId}/lock-seat", HttpMethods.Post, request);
+        return ForwardAsync($"/api/availability/{flightId}/seats/{seatNumber}/hold", HttpMethods.Put, request);
     }
 
-    [HttpPost("{flightId}/confirm-seat")]
+    [HttpPut("{flightId}/seats/{seatNumber}/reservation")]
     [Authorize(Roles = "Admin,Customer")]
-    public Task<IActionResult> ConfirmSeat(string flightId, [FromBody] ConfirmSeatRequestDto request)
+    public Task<IActionResult> ConfirmSeatReservation(string flightId, string seatNumber)
     {
-        return ForwardAsync($"/api/availability/{flightId}/confirm-seat", HttpMethods.Post, request);
+        return ForwardAsync($"/api/availability/{flightId}/seats/{seatNumber}/reservation", HttpMethods.Put);
     }
 
-    [HttpPost("{flightId}/release-seat")]
+    [HttpDelete("{flightId}/seats/{seatNumber}/hold")]
     [Authorize(Roles = "Admin,Customer")]
-    public Task<IActionResult> ReleaseSeat(string flightId, [FromBody] ReleaseSeatRequestDto request)
+    public Task<IActionResult> DeleteSeatHold(string flightId, string seatNumber)
     {
-        return ForwardAsync($"/api/availability/{flightId}/release-seat", HttpMethods.Post, request);
+        return ForwardAsync($"/api/availability/{flightId}/seats/{seatNumber}/hold", HttpMethods.Delete);
     }
 }

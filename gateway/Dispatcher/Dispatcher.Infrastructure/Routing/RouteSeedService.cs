@@ -38,9 +38,11 @@ public class RouteSeedService
         await AddRouteAsync("/api/reservations", "POST", "ReservationService", reservationBaseUrl, true, "Admin", "Customer");
 
         await AddRouteAsync("/api/availability", "GET", "AvailabilityService", availabilityBaseUrl, true, "Admin", "Customer");
-        await AddRouteAsync("/api/availability", "POST", "AvailabilityService", availabilityBaseUrl, true, "Admin", "Customer");
+        await AddRouteAsync("/api/availability", "PUT", "AvailabilityService", availabilityBaseUrl, true, "Admin", "Customer");
+        await AddRouteAsync("/api/availability", "DELETE", "AvailabilityService", availabilityBaseUrl, true, "Admin", "Customer");
         await AddRouteAsync("/api/payments", "GET", "PaymentService", paymentBaseUrl, true, "Admin", "Customer");
         await AddRouteAsync("/api/payments", "POST", "PaymentService", paymentBaseUrl, true, "Admin", "Customer");
+        await AddRouteAsync("/api/payments", "PATCH", "PaymentService", paymentBaseUrl, true, "Admin", "Customer");
         await AddRouteAsync("/api/notifications", "GET", "NotificationService", notificationBaseUrl, true, "Admin", "Customer");
         await AddRouteAsync("/api/notifications", "POST", "NotificationService", notificationBaseUrl, true, "Admin", "Customer");
     }
