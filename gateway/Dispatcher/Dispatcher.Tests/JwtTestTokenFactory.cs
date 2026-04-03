@@ -11,7 +11,12 @@ public static class JwtTestTokenFactory
     private const string Issuer = "AuthService";
     private const string Audience = "Dispatcher";
 
-    public static string CreateToken(string role, DateTime? expiresUtc = null)
+    public static string CreateToken(string role)
+    {
+        return CreateToken(role, DateTime.UtcNow.AddHours(1));
+    }
+
+    public static string CreateToken(string role, DateTime expiresUtc)
     {
         var claims = new List<Claim>
         {
@@ -28,7 +33,7 @@ public static class JwtTestTokenFactory
             issuer: Issuer,
             audience: Audience,
             claims: claims,
-            expires: expiresUtc ?? DateTime.UtcNow.AddHours(1),
+            expires: expiresUtc,
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
