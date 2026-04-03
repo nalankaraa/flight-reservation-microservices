@@ -11,6 +11,8 @@ using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 var availabilityBaseUrl = builder.Configuration["Services:Availability:BaseUrl"] ?? "http://localhost:5099/";
+var flightBaseUrl = builder.Configuration["Services:Flight:BaseUrl"] ?? "http://localhost:5092/";
+var paymentBaseUrl = builder.Configuration["Services:Payment:BaseUrl"] ?? "http://localhost:5097/";
 var mongoConnectionString = builder.Configuration["Mongo:ConnectionString"] ?? "mongodb://localhost:27017";
 var mongoDatabaseName = builder.Configuration["Mongo:DatabaseName"] ?? "reservation-db";
 
@@ -47,6 +49,18 @@ builder.Services.AddSharedJwtAuthentication(builder.Configuration);
 builder.Services.AddHttpClient<ISeatAvailabilityClient, AvailabilityApiClient>(client =>
 {
     client.BaseAddress = new Uri(availabilityBaseUrl);
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+builder.Services.AddHttpClient<IFlightDetailsClient, FlightApiClient>(client =>
+{
+    client.BaseAddress = new Uri(flightBaseUrl);
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+builder.Services.AddHttpClient<IPaymentClient, PaymentApiClient>(client =>
+{
+    client.BaseAddress = new Uri(paymentBaseUrl);
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     client.Timeout = TimeSpan.FromSeconds(10);
 });

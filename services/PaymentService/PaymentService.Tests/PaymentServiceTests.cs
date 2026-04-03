@@ -11,11 +11,13 @@ public class PaymentServiceTests
     {
         // Arrange
         var repository = new FakePaymentRepository();
-        var service = new PaymentService.Application.Services.PaymentService(repository);
+        var notificationClient = new FakeNotificationClient();
+        var service = new PaymentService.Application.Services.PaymentService(repository, notificationClient);
 
         var request = new CreatePaymentDto
         {
             ReservationId = "reservation-1",
+            UserId = "user-1",
             Amount = 2500
         };
 
@@ -25,6 +27,7 @@ public class PaymentServiceTests
         // Assert
         result.Should().NotBeNull();
         result.ReservationId.Should().Be("reservation-1");
+        result.UserId.Should().Be("user-1");
         result.Amount.Should().Be(2500);
         result.Status.Should().Be("Pending");
         result.Links.Should().BeEmpty();
@@ -36,11 +39,13 @@ public class PaymentServiceTests
     {
         // Arrange
         var repository = new FakePaymentRepository();
-        var service = new PaymentService.Application.Services.PaymentService(repository);
+        var notificationClient = new FakeNotificationClient();
+        var service = new PaymentService.Application.Services.PaymentService(repository, notificationClient);
 
         var created = await service.CreateAsync(new CreatePaymentDto
         {
             ReservationId = "reservation-1",
+            UserId = "user-1",
             Amount = 2500
         });
 
@@ -57,7 +62,8 @@ public class PaymentServiceTests
     {
         // Arrange
         var repository = new FakePaymentRepository();
-        var service = new PaymentService.Application.Services.PaymentService(repository);
+        var notificationClient = new FakeNotificationClient();
+        var service = new PaymentService.Application.Services.PaymentService(repository, notificationClient);
 
         // Act
         var result = await service.GetByIdAsync("missing-id");
@@ -71,22 +77,26 @@ public class PaymentServiceTests
     {
         // Arrange
         var repository = new FakePaymentRepository();
-        var service = new PaymentService.Application.Services.PaymentService(repository);
+        var notificationClient = new FakeNotificationClient();
+        var service = new PaymentService.Application.Services.PaymentService(repository, notificationClient);
 
         var created = await service.CreateAsync(new CreatePaymentDto
         {
             ReservationId = "reservation-1",
+            UserId = "user-1",
             Amount = 2500
         });
 
         // Act
-        var success = await service.CompleteAsync(created.Id);
+        var success = await service.CompleteAsync(created.Id, "Bearer token");
         var updated = await service.GetByIdAsync(created.Id);
 
         // Assert
         success.Should().BeTrue();
         updated.Should().NotBeNull();
         updated!.Status.Should().Be("Completed");
+        notificationClient.CreateCallCount.Should().Be(1);
+        notificationClient.LastType.Should().Be("PaymentCompleted");
     }
 
     [Fact]
@@ -94,22 +104,26 @@ public class PaymentServiceTests
     {
         // Arrange
         var repository = new FakePaymentRepository();
-        var service = new PaymentService.Application.Services.PaymentService(repository);
+        var notificationClient = new FakeNotificationClient();
+        var service = new PaymentService.Application.Services.PaymentService(repository, notificationClient);
 
         var created = await service.CreateAsync(new CreatePaymentDto
         {
             ReservationId = "reservation-1",
+            UserId = "user-1",
             Amount = 2500
         });
 
         // Act
-        var success = await service.FailAsync(created.Id);
+        var success = await service.FailAsync(created.Id, "Bearer token");
         var updated = await service.GetByIdAsync(created.Id);
 
         // Assert
         success.Should().BeTrue();
         updated.Should().NotBeNull();
         updated!.Status.Should().Be("Failed");
+        notificationClient.CreateCallCount.Should().Be(1);
+        notificationClient.LastType.Should().Be("PaymentFailed");
     }
 
     [Fact]
@@ -117,18 +131,20 @@ public class PaymentServiceTests
     {
         // Arrange
         var repository = new FakePaymentRepository();
-        var service = new PaymentService.Application.Services.PaymentService(repository);
+        var notificationClient = new FakeNotificationClient();
+        var service = new PaymentService.Application.Services.PaymentService(repository, notificationClient);
 
         var created = await service.CreateAsync(new CreatePaymentDto
         {
             ReservationId = "reservation-1",
+            UserId = "user-1",
             Amount = 2500
         });
 
-        await service.CompleteAsync(created.Id);
+        await service.CompleteAsync(created.Id, "Bearer token");
 
         // Act
-        var secondAttempt = await service.CompleteAsync(created.Id);
+        var secondAttempt = await service.CompleteAsync(created.Id, "Bearer token");
 
         // Assert
         secondAttempt.Should().BeFalse();
@@ -139,18 +155,20 @@ public class PaymentServiceTests
     {
         // Arrange
         var repository = new FakePaymentRepository();
-        var service = new PaymentService.Application.Services.PaymentService(repository);
+        var notificationClient = new FakeNotificationClient();
+        var service = new PaymentService.Application.Services.PaymentService(repository, notificationClient);
 
         var created = await service.CreateAsync(new CreatePaymentDto
         {
             ReservationId = "reservation-1",
+            UserId = "user-1",
             Amount = 2500
         });
 
-        await service.CompleteAsync(created.Id);
+        await service.CompleteAsync(created.Id, "Bearer token");
 
         // Act
-        var failAttempt = await service.FailAsync(created.Id);
+        var failAttempt = await service.FailAsync(created.Id, "Bearer token");
 
         // Assert
         failAttempt.Should().BeFalse();

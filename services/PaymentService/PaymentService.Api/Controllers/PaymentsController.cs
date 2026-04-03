@@ -56,11 +56,11 @@ public class PaymentsController : ControllerBase
 
         if (normalizedStatus.Equals("Completed", StringComparison.OrdinalIgnoreCase))
         {
-            success = await _paymentService.CompleteAsync(id);
+            success = await _paymentService.CompleteAsync(id, Request.Headers.Authorization.ToString());
         }
         else if (normalizedStatus.Equals("Failed", StringComparison.OrdinalIgnoreCase))
         {
-            success = await _paymentService.FailAsync(id);
+            success = await _paymentService.FailAsync(id, Request.Headers.Authorization.ToString());
         }
         else
         {
@@ -78,7 +78,8 @@ public class PaymentsController : ControllerBase
         payment.Links =
         [
             new LinkDto { Rel = "self", Href = $"/api/payments/{payment.Id}", Method = "GET" },
-            new LinkDto { Rel = "reservation", Href = $"/api/reservations/{payment.ReservationId}", Method = "GET" }
+            new LinkDto { Rel = "reservation", Href = $"/api/reservations/{payment.ReservationId}", Method = "GET" },
+            new LinkDto { Rel = "notifications", Href = $"/api/notifications/user/{payment.UserId}", Method = "GET" }
         ];
 
         if (payment.Status == "Pending")

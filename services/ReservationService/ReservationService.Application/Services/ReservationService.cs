@@ -10,12 +10,20 @@ public class ReservationService : IReservationService
 {
     private readonly IReservationRepository _repository;
     private readonly ISeatAvailabilityClient _seatAvailabilityClient;
+    private readonly IFlightDetailsClient _flightDetailsClient;
+    private readonly IPaymentClient _paymentClient;
     private const int SeatLockMinutes = 10;
 
-    public ReservationService(IReservationRepository repository, ISeatAvailabilityClient seatAvailabilityClient)
+    public ReservationService(
+        IReservationRepository repository,
+        ISeatAvailabilityClient seatAvailabilityClient,
+        IFlightDetailsClient flightDetailsClient,
+        IPaymentClient paymentClient)
     {
         _repository = repository;
         _seatAvailabilityClient = seatAvailabilityClient;
+        _flightDetailsClient = flightDetailsClient;
+        _paymentClient = paymentClient;
     }
 
     public async Task<ReservationResponseDto> CreateAsync(CreateReservationDto request, string userId, string authorizationHeader)
@@ -104,6 +112,46 @@ public class ReservationService : IReservationService
             };
         }
 
+        var flightLookup = await _flightDetailsClient.GetByIdAsync(request.FlightId, authorizationHeader);
+
+        if (!flightLookup.Success)
+        {
+            await _repository.DeleteAsync(reservation.Id);
+            await _seatAvailabilityClient.ReleaseSeatAsync(request.FlightId, normalizedSeatNumber, authorizationHeader);
+
+            return new ReservationResponseDto
+            {
+                Success = false,
+                ErrorCode = flightLookup.IsNotFound ? "FlightNotFound" : "PaymentUnavailable",
+                FlightId = request.FlightId,
+                SeatNumber = normalizedSeatNumber,
+                Message = flightLookup.IsNotFound
+                    ? "The selected flight could not be found."
+                    : "Payment service is unavailable."
+            };
+        }
+
+        var paymentCreation = await _paymentClient.CreateAsync(
+            reservation.Id,
+            userId,
+            flightLookup.Price,
+            authorizationHeader);
+
+        if (!paymentCreation.Success)
+        {
+            await _repository.DeleteAsync(reservation.Id);
+            await _seatAvailabilityClient.ReleaseSeatAsync(request.FlightId, normalizedSeatNumber, authorizationHeader);
+
+            return new ReservationResponseDto
+            {
+                Success = false,
+                ErrorCode = "PaymentUnavailable",
+                FlightId = request.FlightId,
+                SeatNumber = normalizedSeatNumber,
+                Message = "Payment service is unavailable."
+            };
+        }
+
         return new ReservationResponseDto
         {
             Success = true,
@@ -112,6 +160,8 @@ public class ReservationService : IReservationService
             FlightId = reservation.FlightId,
             PassengerName = reservation.PassengerName,
             SeatNumber = reservation.SeatNumber,
+            PaymentId = paymentCreation.PaymentId,
+            PaymentStatus = paymentCreation.Status,
             Message = "Reservation created successfully."
         };
     }

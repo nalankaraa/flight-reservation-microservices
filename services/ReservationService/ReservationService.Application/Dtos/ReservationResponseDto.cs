@@ -11,6 +11,8 @@ public class ReservationResponseDto
     public string? FlightId { get; set; }
     public string? PassengerName { get; set; }
     public string? SeatNumber { get; set; }
+    public string? PaymentId { get; set; }
+    public string? PaymentStatus { get; set; }
     public string? Message { get; set; }
     public List<LinkDto> Links { get; set; } = [];
 }
