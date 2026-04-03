@@ -7,20 +7,18 @@ using ReservationService.Infrastructure.Clients;
 using BuildingBlocks.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 var availabilityBaseUrl = builder.Configuration["Services:Availability:BaseUrl"] ?? "http://localhost:5099/";
+var mongoConnectionString = builder.Configuration["Mongo:ConnectionString"] ?? "mongodb://localhost:27017";
+var mongoDatabaseName = builder.Configuration["Mongo:DatabaseName"] ?? "reservation-db";
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Reservation Service API",
-        Version = "v1"
-    });
-
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Reservation Service API", Version = "v1" });
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -30,7 +28,6 @@ builder.Services.AddSwaggerGen(options =>
         In = ParameterLocation.Header,
         Description = "Bearer {token}"
     });
-
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -54,7 +51,14 @@ builder.Services.AddHttpClient<ISeatAvailabilityClient, AvailabilityApiClient>(c
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 
-builder.Services.AddSingleton<IReservationRepository, InMemoryReservationRepository>();
+builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    return client.GetDatabase(mongoDatabaseName);
+});
+
+builder.Services.AddSingleton<IReservationRepository, MongoReservationRepository>();
 builder.Services.AddScoped<IReservationService, ReservationService.Application.Services.ReservationService>();
 
 var app = builder.Build();
