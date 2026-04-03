@@ -21,6 +21,8 @@ public class RouteSeedService
         var flightBaseUrl = _configuration["Services:Flight:BaseUrl"] ?? "http://localhost:5162";
         var reservationBaseUrl = _configuration["Services:Reservation:BaseUrl"] ?? "http://localhost:5029";
         var availabilityBaseUrl = _configuration["Services:Availability:BaseUrl"] ?? "http://localhost:5099";
+        var paymentBaseUrl = _configuration["Services:Payment:BaseUrl"] ?? "http://localhost:5110";
+        var notificationBaseUrl = _configuration["Services:Notification:BaseUrl"] ?? "http://localhost:5270";
 
         await AddRouteAsync("/api/auth/register", "POST", "AuthService", authBaseUrl, false);
         await AddRouteAsync("/api/auth/login", "POST", "AuthService", authBaseUrl, false);
@@ -37,6 +39,10 @@ public class RouteSeedService
 
         await AddRouteAsync("/api/availability", "GET", "AvailabilityService", availabilityBaseUrl, true, "Admin", "Customer");
         await AddRouteAsync("/api/availability", "POST", "AvailabilityService", availabilityBaseUrl, true, "Admin", "Customer");
+        await AddRouteAsync("/api/payments", "GET", "PaymentService", paymentBaseUrl, true, "Admin", "Customer");
+        await AddRouteAsync("/api/payments", "POST", "PaymentService", paymentBaseUrl, true, "Admin", "Customer");
+        await AddRouteAsync("/api/notifications", "GET", "NotificationService", notificationBaseUrl, true, "Admin", "Customer");
+        await AddRouteAsync("/api/notifications", "POST", "NotificationService", notificationBaseUrl, true, "Admin", "Customer");
     }
 
     private Task AddRouteAsync(
