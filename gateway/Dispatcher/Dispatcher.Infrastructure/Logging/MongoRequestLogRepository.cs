@@ -19,14 +19,24 @@ public class MongoRequestLogRepository : IRequestLogRepository
 
     public async Task AddAsync(RequestLog log)
     {
-        var document = MapToDocument(log);
+        await AddManyAsync([log], CancellationToken.None);
+    }
 
-        if (string.IsNullOrWhiteSpace(document.Id))
+    public async Task AddManyAsync(IReadOnlyCollection<RequestLog> logs, CancellationToken cancellationToken)
+    {
+        if (logs.Count == 0)
+        {
+            return;
+        }
+
+        var documents = logs.Select(MapToDocument).ToList();
+
+        foreach (var document in documents.Where(document => string.IsNullOrWhiteSpace(document.Id)))
         {
             document.Id = Guid.NewGuid().ToString();
         }
 
-        await _collection.InsertOneAsync(document);
+        await _collection.InsertManyAsync(documents, cancellationToken: cancellationToken);
     }
 
     public async Task<List<RequestLog>> GetRecentAsync(int count = 100)
@@ -49,6 +59,8 @@ public class MongoRequestLogRepository : IRequestLogRepository
             Method = log.Method,
             StatusCode = log.StatusCode,
             DurationMs = log.DurationMs,
+            UserId = log.UserId,
+            UserRole = log.UserRole,
             TargetService = log.TargetService,
             ErrorMessage = log.ErrorMessage
         };
@@ -64,6 +76,8 @@ public class MongoRequestLogRepository : IRequestLogRepository
             Method = document.Method,
             StatusCode = document.StatusCode,
             DurationMs = document.DurationMs,
+            UserId = document.UserId,
+            UserRole = document.UserRole,
             TargetService = document.TargetService,
             ErrorMessage = document.ErrorMessage
         };
@@ -78,6 +92,8 @@ public class MongoRequestLogRepository : IRequestLogRepository
         public string Method { get; set; } = default!;
         public int StatusCode { get; set; }
         public double DurationMs { get; set; }
+        public string? UserId { get; set; }
+        public string? UserRole { get; set; }
         public string? TargetService { get; set; }
         public string? ErrorMessage { get; set; }
     }

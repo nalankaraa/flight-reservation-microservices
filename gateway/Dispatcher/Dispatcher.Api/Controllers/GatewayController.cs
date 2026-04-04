@@ -1,4 +1,5 @@
 using Dispatcher.Application.Forwarding;
+using Dispatcher.Api.Middleware;
 using Dispatcher.Domain.Routing;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,10 +27,18 @@ public class GatewayController : ControllerBase
 
     private async Task<IActionResult> ForwardRequest(string path, string method)
     {
-        var route = await _routeResolver.ResolveAsync(path, method);
+        var route = HttpContext.Items.TryGetValue(DispatcherRequestLogContextKeys.ResolvedRoute, out var resolvedRoute)
+            ? resolvedRoute as RouteDefinition
+            : await _routeResolver.ResolveAsync(path, method);
 
         if (route is null)
+        {
+            HttpContext.Items[DispatcherRequestLogContextKeys.ErrorMessage] = "Not Found";
             return NotFound();
+        }
+
+        HttpContext.Items[DispatcherRequestLogContextKeys.ResolvedRoute] = route;
+        HttpContext.Items[DispatcherRequestLogContextKeys.TargetService] = route.TargetServiceName;
 
         var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
         var queryString = Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty;
@@ -54,10 +63,12 @@ public class GatewayController : ControllerBase
         }
         catch (HttpRequestException)
         {
+            HttpContext.Items[DispatcherRequestLogContextKeys.ErrorMessage] = "Bad Gateway";
             return StatusCode(StatusCodes.Status502BadGateway, "Bad Gateway");
         }
         catch (TaskCanceledException)
         {
+            HttpContext.Items[DispatcherRequestLogContextKeys.ErrorMessage] = "Service Unavailable";
             return StatusCode(StatusCodes.Status503ServiceUnavailable, "Service Unavailable");
         }
     }

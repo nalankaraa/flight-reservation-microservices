@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using Dispatcher.Application.Logging;
+using Dispatcher.Api.Observability;
 using Dispatcher.Domain.Logging;
 using Dispatcher.Domain.Routing;
+using System.Security.Claims;
 
 namespace Dispatcher.Api.Middleware;
 
@@ -14,15 +16,22 @@ public class RequestLoggingMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, IRequestLogRepository logRepository, IRouteResolver routeResolver)
+    public async Task InvokeAsync(
+        HttpContext context,
+        IRequestLogRepository logRepository,
+        IRouteResolver routeResolver,
+        DispatcherMetricsStore metricsStore)
     {
         var stopwatch = Stopwatch.StartNew();
-        var route = await routeResolver.ResolveAsync(
-            context.Request.Path.Value ?? string.Empty,
-            context.Request.Method);
+        var route = context.Items.TryGetValue(DispatcherRequestLogContextKeys.ResolvedRoute, out var resolvedRoute)
+            ? resolvedRoute as RouteDefinition
+            : await routeResolver.ResolveAsync(
+                context.Request.Path.Value ?? string.Empty,
+                context.Request.Method);
 
         if (route is not null)
         {
+            context.Items[DispatcherRequestLogContextKeys.ResolvedRoute] = route;
             context.Items[DispatcherRequestLogContextKeys.TargetService] = route.TargetServiceName;
         }
 
@@ -37,11 +46,20 @@ public class RequestLoggingMiddleware
             StatusCode = context.Response.StatusCode,
             DurationMs = stopwatch.Elapsed.TotalMilliseconds,
             TimestampUtc = DateTime.UtcNow,
+            UserId = context.User.FindFirstValue(ClaimTypes.NameIdentifier),
+            UserRole = string.Join(",", context.User.FindAll(ClaimTypes.Role).Select(x => x.Value)),
             TargetService = context.Items[DispatcherRequestLogContextKeys.TargetService] as string,
             ErrorMessage = ResolveErrorMessage(context)
         };
 
-        await logRepository.AddAsync(log);
+        metricsStore.RecordRequest(
+            log.Path,
+            log.Method,
+            log.StatusCode,
+            log.DurationMs,
+            log.TargetService);
+
+        _ = logRepository.AddAsync(log);
     }
 
     private static string? ResolveErrorMessage(HttpContext context)

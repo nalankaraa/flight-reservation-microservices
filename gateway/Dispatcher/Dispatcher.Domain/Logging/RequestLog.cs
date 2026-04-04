@@ -7,6 +7,8 @@ public class RequestLog
     public string Method { get; set; } = default!;
     public int StatusCode { get; set; }
     public double DurationMs { get; set; }
+    public string? UserId { get; set; }
+    public string? UserRole { get; set; }
     public string? TargetService { get; set; }
     public string? ErrorMessage { get; set; }
 }

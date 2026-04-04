@@ -31,6 +31,8 @@ public class MongoRequestLogRepositoryTests : IDisposable
             Method = "GET",
             StatusCode = 200,
             DurationMs = 12.5,
+            UserId = "admin-1",
+            UserRole = "Admin",
             TargetService = "FlightService"
         });
 
@@ -38,6 +40,8 @@ public class MongoRequestLogRepositoryTests : IDisposable
 
         result.Should().ContainSingle();
         result[0].Id.Should().Be("log-1");
+        result[0].UserId.Should().Be("admin-1");
+        result[0].UserRole.Should().Be("Admin");
         result[0].TargetService.Should().Be("FlightService");
         result[0].ErrorMessage.Should().BeNull();
     }

@@ -1,0 +1,429 @@
+{
+    "metrics": {
+        "vus_max": {
+            "min": 200,
+            "max": 200,
+            "value": 200
+        },
+        "http_req_duration": {
+            "min": 3.236965,
+            "med": 587.847669,
+            "max": 4502.259196,
+            "p(90)": 1424.4571545999997,
+            "p(95)": 2001.6269735999952,
+            "p(99)": 2979.6254747999983,
+            "avg": 742.3365367785057
+        },
+        "data_sent": {
+            "count": 2731923,
+            "rate": 166462.073933922
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 768.4333596981394,
+            "min": 3.236965,
+            "med": 606.00171,
+            "max": 4502.259196,
+            "p(90)": 1487.6253729999992,
+            "p(95)": 2058.4400645999995,
+            "p(99)": 3011.8627886600007
+        },
+        "http_req_blocked": {
+            "p(99)": 79.77591404999991,
+            "avg": 3.3127979554517055,
+            "min": 0.001012,
+            "med": 0.0065845,
+            "max": 257.086327,
+            "p(90)": 0.05753889999999971,
+            "p(95)": 18.423756549999997
+        },
+        "http_req_connecting": {
+            "max": 125.678381,
+            "p(90)": 0,
+            "p(95)": 16.04101549999995,
+            "p(99)": 74.4767157599998,
+            "avg": 2.9218850978193145,
+            "min": 0,
+            "med": 0
+        },
+        "successful_checkouts": {
+            "count": 70,
+            "rate": 4.265253879913358
+        },
+        "iterations": {
+            "count": 2957,
+            "rate": 180.17651032719712
+        },
+        "http_reqs": {
+            "count": 3210,
+            "rate": 195.59235649316966
+        },
+        "iteration_duration": {
+            "p(90)": 1783.0319832000002,
+            "p(95)": 2387.5587908,
+            "p(99)": 3596.60068607,
+            "avg": 1038.6518620050747,
+            "min": 256.422798,
+            "med": 848.2142375000001,
+            "max": 4994.925388
+        },
+        "http_req_sending": {
+            "p(90)": 1.2138527,
+            "p(95)": 7.903149199999976,
+            "p(99)": 70.95260399999941,
+            "avg": 2.098021995950157,
+            "min": 0.004133,
+            "med": 0.029904,
+            "max": 167.034996
+        },
+        "business_conflicts": {
+            "count": 249,
+            "rate": 15.172117372834657
+        },
+        "http_req_failed": {
+            "passes": 255,
+            "fails": 2955,
+            "thresholds": {
+                "rate<0.30": false
+            },
+            "value": 0.0794392523364486
+        },
+        "http_req_waiting": {
+            "avg": 734.7577125261702,
+            "min": 3.151792,
+            "med": 576.7988680000001,
+            "max": 4495.570664,
+            "p(90)": 1421.8789738,
+            "p(95)": 2000.8682105999949,
+            "p(99)": 2967.4856364299994
+        },
+        "system_failure_rate": {
+            "passes": 6,
+            "fails": 3189,
+            "value": 0.0018779342723004694
+        },
+        "http_req_receiving": {
+            "med": 0.0902635,
+            "max": 220.783464,
+            "p(90)": 9.9299436,
+            "p(95)": 32.22822924999998,
+            "p(99)": 108.07532635999961,
+            "avg": 5.480802256386292,
+            "min": 0.01344
+        },
+        "data_received": {
+            "count": 24523467,
+            "rate": 1494268.7538668169
+        },
+        "http_req_tls_handshaking": {
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0,
+            "avg": 0
+        },
+        "checks": {
+            "passes": 3220,
+            "fails": 0,
+            "value": 1
+        },
+        "vus": {
+            "value": 44,
+            "min": 44,
+            "max": 200
+        },
+        "successful_reservations": {
+            "count": 208,
+            "rate": 12.673897243171119
+        }
+    },
+    "setup_data": {
+        "adminToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNmJkYjVhZC02ZmExLTQ3MzgtODhkNy02NjMyOThiYTFmYWIiLCJlbWFpbCI6ImFkbWluQHN5c3RlbS5sb2NhbCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiZTZiZGI1YWQtNmZhMS00NzM4LTg4ZDctNjYzMjk4YmExZmFiIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5Ac3lzdGVtLmxvY2FsIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3NzUzMDY3NzksImlzcyI6IkF1dGhTZXJ2aWNlIiwiYXVkIjoiRGlzcGF0Y2hlciJ9.9qYMoCHJaKVtAyPktgNW-DGRHXWyRwEuZ4vQl4R8exg",
+        "customers": [
+            {
+                "email": "loadtest_1775303179416_0_70226@system.local",
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5MDk5ZDM2MC03MmNjLTRjY2QtOGFlNC0zYzE1YzM2YmI5ZTciLCJlbWFpbCI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk0MTZfMF83MDIyNkBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjkwOTlkMzYwLTcyY2MtNGNjZC04YWU0LTNjMTVjMzZiYjllNyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk0MTZfMF83MDIyNkBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJDdXN0b21lciIsImV4cCI6MTc3NTMwNjc3OSwiaXNzIjoiQXV0aFNlcnZpY2UiLCJhdWQiOiJEaXNwYXRjaGVyIn0.9cnVaGsMakopkeXkItF6_-qmu14v9dCQCm8QJisKdP4"
+            },
+            {
+                "email": "loadtest_1775303179484_1_25145@system.local",
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyODVjMmJhMi0zZGIwLTRkYjAtYjNiZi1lZjQ4YjM5ZGQ3YzMiLCJlbWFpbCI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk0ODRfMV8yNTE0NUBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjI4NWMyYmEyLTNkYjAtNGRiMC1iM2JmLWVmNDhiMzlkZDdjMyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk0ODRfMV8yNTE0NUBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJDdXN0b21lciIsImV4cCI6MTc3NTMwNjc3OSwiaXNzIjoiQXV0aFNlcnZpY2UiLCJhdWQiOiJEaXNwYXRjaGVyIn0.RErGomDqLLDJ5A9y1aBf7wqVPdYYwjIzkWCCoKDvNWY"
+            },
+            {
+                "email": "loadtest_1775303179551_2_27085@system.local",
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMjg3MWFiYy0wZDYwLTQ5YTMtYjMzNC1jM2U5ZjMyNjhlZjMiLCJlbWFpbCI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk1NTFfMl8yNzA4NUBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImUyODcxYWJjLTBkNjAtNDlhMy1iMzM0LWMzZTlmMzI2OGVmMyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk1NTFfMl8yNzA4NUBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJDdXN0b21lciIsImV4cCI6MTc3NTMwNjc3OSwiaXNzIjoiQXV0aFNlcnZpY2UiLCJhdWQiOiJEaXNwYXRjaGVyIn0.lvnaw-WrVsuxrO2vXm8C7cccxMKdjWpvCmEmqOkva1U"
+            },
+            {
+                "email": "loadtest_1775303179621_3_15414@system.local",
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MGIxMTJkMi03MzI0LTQ0NDctYTc1Yy0zZWZlMmZjM2E2NjIiLCJlbWFpbCI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk2MjFfM18xNTQxNEBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUwYjExMmQyLTczMjQtNDQ0Ny1hNzVjLTNlZmUyZmMzYTY2MiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk2MjFfM18xNTQxNEBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJDdXN0b21lciIsImV4cCI6MTc3NTMwNjc3OSwiaXNzIjoiQXV0aFNlcnZpY2UiLCJhdWQiOiJEaXNwYXRjaGVyIn0.OFZzIcsVpzHG796_L18588mIuspuVHAiiE1w9tfjncM"
+            },
+            {
+                "email": "loadtest_1775303179688_4_18605@system.local",
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MzYxZjcxMS04ZTI1LTQ4NjItODhlMS01NzE3MzVlMDE0N2UiLCJlbWFpbCI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk2ODhfNF8xODYwNUBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjYzNjFmNzExLThlMjUtNDg2Mi04OGUxLTU3MTczNWUwMTQ3ZSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImxvYWR0ZXN0XzE3NzUzMDMxNzk2ODhfNF8xODYwNUBzeXN0ZW0ubG9jYWwiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJDdXN0b21lciIsImV4cCI6MTc3NTMwNjc3OSwiaXNzIjoiQXV0aFNlcnZpY2UiLCJhdWQiOiJEaXNwYXRjaGVyIn0.Ru_qi_ZTE6SOmA1oG4uJR187pVdyj7YTckoSvameBjo"
+            }
+        ],
+        "flights": [
+            {
+                "id": "4ec5c3c4-ca35-466a-a6a3-bf34455ac724"
+            },
+            {
+                "id": "206aa022-0a08-4307-97bc-e142b408031c"
+            },
+            {
+                "id": "1e85b76f-ecd7-4b9b-820d-63e2da552342"
+            },
+            {
+                "id": "0077be58-0765-45fe-b9d4-9c6801b4abc1"
+            }
+        ],
+        "hotspotFlightId": "4ec5c3c4-ca35-466a-a6a3-bf34455ac724"
+    },
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {
+            "setup": {
+                "name": "setup",
+                "path": "::setup",
+                "id": "5c0f8025f7e0b6654089e5b00e950f1a",
+                "groups": {},
+                "checks": {
+                        "admin login ok": {
+                            "path": "::setup::admin login ok",
+                            "id": "9eb04769db2dc0c1f26c21d9c830227b",
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "admin login ok"
+                        },
+                        "admin login token": {
+                            "id": "fd67ab705f2f72f16e9ab873ebc5dd58",
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "admin login token",
+                            "path": "::setup::admin login token"
+                        },
+                        "customer 0 register accepted": {
+                            "fails": 0,
+                            "name": "customer 0 register accepted",
+                            "path": "::setup::customer 0 register accepted",
+                            "id": "bace739f5815f40ad2854cb9302283a9",
+                            "passes": 1
+                        },
+                        "customer 0 login ok": {
+                            "name": "customer 0 login ok",
+                            "path": "::setup::customer 0 login ok",
+                            "id": "80708e9d51b11e95f75f16ad879481f3",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "customer 0 login token": {
+                            "path": "::setup::customer 0 login token",
+                            "id": "4e04835053ef93a2cd981982de93b50f",
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "customer 0 login token"
+                        },
+                        "customer 1 register accepted": {
+                            "id": "024a632df0cd4ba6a2c6aa5812f53a45",
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "customer 1 register accepted",
+                            "path": "::setup::customer 1 register accepted"
+                        },
+                        "customer 1 login ok": {
+                            "id": "86d90b757d6b91a2d6a3e2219ae8f108",
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "customer 1 login ok",
+                            "path": "::setup::customer 1 login ok"
+                        },
+                        "customer 1 login token": {
+                            "fails": 0,
+                            "name": "customer 1 login token",
+                            "path": "::setup::customer 1 login token",
+                            "id": "59c921c3bf2d4440d2ac22d6ac78a5ef",
+                            "passes": 1
+                        },
+                        "customer 2 register accepted": {
+                            "path": "::setup::customer 2 register accepted",
+                            "id": "c2029b4600cc330dccaf07184d9ba8cd",
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "customer 2 register accepted"
+                        },
+                        "customer 2 login ok": {
+                            "name": "customer 2 login ok",
+                            "path": "::setup::customer 2 login ok",
+                            "id": "b4acb1678f98c4ea295a4f67cfa745c5",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "customer 2 login token": {
+                            "name": "customer 2 login token",
+                            "path": "::setup::customer 2 login token",
+                            "id": "54548c44a192bdd37dd533026647ee9d",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "customer 3 register accepted": {
+                            "path": "::setup::customer 3 register accepted",
+                            "id": "c322e6ef519f77f61fa253e98f44477b",
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "customer 3 register accepted"
+                        },
+                        "customer 3 login ok": {
+                            "name": "customer 3 login ok",
+                            "path": "::setup::customer 3 login ok",
+                            "id": "52d534a6cc5f079170d8ac8f29c2b95e",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "customer 3 login token": {
+                            "name": "customer 3 login token",
+                            "path": "::setup::customer 3 login token",
+                            "id": "8b3f46412dc01e47564d17ddac1a684e",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "customer 4 register accepted": {
+                            "fails": 0,
+                            "name": "customer 4 register accepted",
+                            "path": "::setup::customer 4 register accepted",
+                            "id": "9b8c0ad7442dadb5e34cb4b7d08543f0",
+                            "passes": 1
+                        },
+                        "customer 4 login ok": {
+                            "name": "customer 4 login ok",
+                            "path": "::setup::customer 4 login ok",
+                            "id": "2b39e5fa39e35b6465966779b2414554",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "customer 4 login token": {
+                            "name": "customer 4 login token",
+                            "path": "::setup::customer 4 login token",
+                            "id": "a6fa7eee2ec88469bcae898ef5ee384f",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "flight 0 created": {
+                            "name": "flight 0 created",
+                            "path": "::setup::flight 0 created",
+                            "id": "39fcf8b388d56986b2a4284a202e752c",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "flight 0 id exists": {
+                            "fails": 0,
+                            "name": "flight 0 id exists",
+                            "path": "::setup::flight 0 id exists",
+                            "id": "8438f1a8ce0f424187120896a37cd13f",
+                            "passes": 1
+                        },
+                        "flight 1 created": {
+                            "name": "flight 1 created",
+                            "path": "::setup::flight 1 created",
+                            "id": "08f735751d1cbb0d53e40b60f67dc21c",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "flight 1 id exists": {
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "flight 1 id exists",
+                            "path": "::setup::flight 1 id exists",
+                            "id": "1243f023b710b2da94c0c682b30365b1"
+                        },
+                        "flight 2 created": {
+                            "name": "flight 2 created",
+                            "path": "::setup::flight 2 created",
+                            "id": "202b968a481a00bcc934904974de251e",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "flight 2 id exists": {
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "flight 2 id exists",
+                            "path": "::setup::flight 2 id exists",
+                            "id": "886308744aa35657dfa868ed90d459a6"
+                        },
+                        "flight 3 created": {
+                            "name": "flight 3 created",
+                            "path": "::setup::flight 3 created",
+                            "id": "e42256a4816917ef088b9af1e204e31b",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "flight 3 id exists": {
+                            "id": "ea7402683d32f2aee41c372703bf0996",
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "flight 3 id exists",
+                            "path": "::setup::flight 3 id exists"
+                        }
+                    }
+            }
+        },
+        "checks": {
+            "get flights ok": {
+                "fails": 0,
+                "name": "get flights ok",
+                "path": "::get flights ok",
+                "id": "0c5e6a2d8fb7aa40ae771cbbbe56dded",
+                "passes": 1446
+            },
+            "get flight detail ok": {
+                "name": "get flight detail ok",
+                "path": "::get flight detail ok",
+                "id": "e645b79f48024f621b08e36abb5b7514",
+                "passes": 585,
+                "fails": 0
+            },
+            "reservation call acceptable": {
+                "id": "cb2f582395e4ce9059415c2dc5ba9462",
+                "passes": 323,
+                "fails": 0,
+                "name": "reservation call acceptable",
+                "path": "::reservation call acceptable"
+            },
+            "get availability ok": {
+                "id": "09e552097164881e3fb3e730a18171c7",
+                "passes": 463,
+                "fails": 0,
+                "name": "get availability ok",
+                "path": "::get availability ok"
+            },
+            "checkout reservation acceptable": {
+                "passes": 140,
+                "fails": 0,
+                "name": "checkout reservation acceptable",
+                "path": "::checkout reservation acceptable",
+                "id": "b44d85f9e38596ad4f83adb3722bdd5b"
+            },
+            "payment fetch ok": {
+                "id": "3c591dfd3f1fd02c56649a2ca994d61a",
+                "passes": 70,
+                "fails": 0,
+                "name": "payment fetch ok",
+                "path": "::payment fetch ok"
+            },
+            "payment complete acceptable": {
+                "passes": 70,
+                "fails": 0,
+                "name": "payment complete acceptable",
+                "path": "::payment complete acceptable",
+                "id": "0750104e7f78d3f3fdc92ef08db98d29"
+            },
+            "admin me ok": {
+                "fails": 0,
+                "name": "admin me ok",
+                "path": "::admin me ok",
+                "id": "f862953f9016e208ecb04b6e4982c91e",
+                "passes": 98
+            }
+        },
+        "name": ""
+    }
+}

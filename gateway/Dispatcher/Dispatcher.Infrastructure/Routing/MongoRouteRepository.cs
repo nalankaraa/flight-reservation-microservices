@@ -9,6 +9,8 @@ namespace Dispatcher.Infrastructure.Routing;
 public class MongoRouteRepository : IRouteRepository
 {
     private readonly IMongoCollection<RouteDefinitionDocument> _collection;
+    private readonly SemaphoreSlim _cacheLock = new(1, 1);
+    private volatile List<RouteDefinitionDocument>? _cachedRoutes;
 
     public MongoRouteRepository(IMongoDatabase database)
     {
@@ -20,7 +22,7 @@ public class MongoRouteRepository : IRouteRepository
         if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(method))
             return null;
 
-        var all = await _collection.Find(_ => true).ToListAsync();
+        var all = await GetCachedRoutesAsync();
 
         var normalizedPath = path.TrimEnd('/');
 
@@ -51,6 +53,7 @@ public class MongoRouteRepository : IRouteRepository
         };
 
         await _collection.InsertOneAsync(document);
+        InvalidateCache();
     }
 
     public async Task UpsertRouteAsync(RouteDefinition route)
@@ -74,12 +77,46 @@ public class MongoRouteRepository : IRouteRepository
             {
                 IsUpsert = true
             });
+
+        InvalidateCache();
     }
 
     public async Task<List<RouteDefinition>> GetAllRoutesAsync()
     {
-        var docs = await _collection.Find(_ => true).ToListAsync();
+        var docs = await GetCachedRoutesAsync();
         return docs.Select(MapToDomain).ToList();
+    }
+
+    private async Task<List<RouteDefinitionDocument>> GetCachedRoutesAsync()
+    {
+        var snapshot = _cachedRoutes;
+        if (snapshot is not null)
+        {
+            return snapshot;
+        }
+
+        await _cacheLock.WaitAsync();
+        try
+        {
+            snapshot = _cachedRoutes;
+            if (snapshot is not null)
+            {
+                return snapshot;
+            }
+
+            snapshot = await _collection.Find(_ => true).ToListAsync();
+            _cachedRoutes = snapshot;
+            return snapshot;
+        }
+        finally
+        {
+            _cacheLock.Release();
+        }
+    }
+
+    private void InvalidateCache()
+    {
+        _cachedRoutes = null;
     }
 
     private static RouteDefinition MapToDomain(RouteDefinitionDocument doc)

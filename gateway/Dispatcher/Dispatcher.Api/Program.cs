@@ -2,6 +2,7 @@ using Dispatcher.Application.Forwarding;
 using Dispatcher.Application.Logging;
 using Dispatcher.Application.Routing;
 using Dispatcher.Api.Middleware;
+using Dispatcher.Api.Observability;
 using Dispatcher.Domain.Routing;
 using Dispatcher.Infrastructure.Http;
 using Dispatcher.Infrastructure.Logging;
@@ -59,10 +60,21 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddSharedJwtAuthentication(builder.Configuration);
 
-builder.Services.AddSingleton<IRequestLogRepository, MongoRequestLogRepository>();
+builder.Services.AddSingleton<MongoRequestLogRepository>();
+builder.Services.AddSingleton<BufferedRequestLogRepository>();
+builder.Services.AddSingleton<IRequestLogRepository>(sp => sp.GetRequiredService<BufferedRequestLogRepository>());
+builder.Services.AddHostedService(sp => sp.GetRequiredService<BufferedRequestLogRepository>());
+builder.Services.AddSingleton<DispatcherMetricsStore>();
 builder.Services.AddHttpClient<IRequestForwarder, HttpRequestForwarder>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(10);
+    client.Timeout = TimeSpan.FromSeconds(20);
+})
+.ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+{
+    MaxConnectionsPerServer = 1024,
+    PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+    PooledConnectionIdleTimeout = TimeSpan.FromMinutes(2),
+    EnableMultipleHttp2Connections = true
 });
 
 builder.Services.AddSingleton<IMongoClient>(_ =>
@@ -97,7 +109,10 @@ app.UseAuthentication();
 app.UseMiddleware<SecurityMiddleware>();
 app.UseAuthorization();
 
+app.MapGet("/", () => Results.Redirect("/dashboard"));
 app.MapControllers();
+app.MapGet("/metrics", (DispatcherMetricsStore metricsStore) =>
+    Results.Text(metricsStore.RenderPrometheus(), "text/plain; version=0.0.4; charset=utf-8"));
 
 app.Run();
 

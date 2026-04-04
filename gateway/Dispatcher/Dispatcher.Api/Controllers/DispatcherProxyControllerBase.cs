@@ -43,7 +43,9 @@ public abstract class DispatcherProxyControllerBase : ControllerBase
             bodyStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody, JsonOptions));
         }
 
-        var route = await _routeResolver.ResolveAsync(path, method);
+        var route = HttpContext.Items.TryGetValue(DispatcherRequestLogContextKeys.ResolvedRoute, out var resolvedRoute)
+            ? resolvedRoute as RouteDefinition
+            : await _routeResolver.ResolveAsync(path, method);
 
         if (route is null)
         {
@@ -51,6 +53,7 @@ public abstract class DispatcherProxyControllerBase : ControllerBase
             return NotFound();
         }
 
+        HttpContext.Items[DispatcherRequestLogContextKeys.ResolvedRoute] = route;
         HttpContext.Items[DispatcherRequestLogContextKeys.TargetService] = route.TargetServiceName;
 
         var targetUrl = route.TargetBaseUrl.TrimEnd('/') + path + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty);

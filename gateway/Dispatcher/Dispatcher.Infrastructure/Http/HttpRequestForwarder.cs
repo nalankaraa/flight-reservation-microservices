@@ -46,7 +46,7 @@ public class HttpRequestForwarder : IRequestForwarder
             }
         }
 
-        return _httpClient.SendAsync(request);
+        return _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
     }
 
     private static bool TryAddContentHeader(HttpRequestMessage request, KeyValuePair<string, string> header)

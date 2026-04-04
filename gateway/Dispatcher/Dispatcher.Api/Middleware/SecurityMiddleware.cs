@@ -21,6 +21,9 @@ public class SecurityMiddleware
 
         if (route is not null)
         {
+            context.Items[DispatcherRequestLogContextKeys.ResolvedRoute] = route;
+            context.Items[DispatcherRequestLogContextKeys.TargetService] = route.TargetServiceName;
+
             if (route.RequiresAuth && !IsAuthenticated(context))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;

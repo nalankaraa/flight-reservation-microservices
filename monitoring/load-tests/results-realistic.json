@@ -1,0 +1,42 @@
+﻿[
+    {
+        "scenario":  "Realistic-50",
+        "concurrentUsers":  50,
+        "averageLatencyMs":  "81,06 ms",
+        "p95LatencyMs":  "222,50 ms",
+        "p99LatencyMs":  "348,82 ms",
+        "errorRatePercent":  "7,45%",
+        "throughputRps":  "176,15 req/s",
+        "notes":  "weighted traffic: 50% search, 20% detail, 15% availability, 10% reservation, 5% checkout; conflicts=209, reservations=218, checkouts=66, system5xx=0%"
+    },
+    {
+        "scenario":  "Realistic-100",
+        "concurrentUsers":  100,
+        "averageLatencyMs":  "220,99 ms",
+        "p95LatencyMs":  "554,05 ms",
+        "p99LatencyMs":  "890,58 ms",
+        "errorRatePercent":  "7,08%",
+        "throughputRps":  "226,55 req/s",
+        "notes":  "weighted traffic: 50% search, 20% detail, 15% availability, 10% reservation, 5% checkout; conflicts=257, reservations=222, checkouts=79, system5xx=0%"
+    },
+    {
+        "scenario":  "Realistic-200",
+        "concurrentUsers":  200,
+        "averageLatencyMs":  "742,34 ms",
+        "p95LatencyMs":  "2.001,63 ms",
+        "p99LatencyMs":  "2.979,63 ms",
+        "errorRatePercent":  "7,94%",
+        "throughputRps":  "195,59 req/s",
+        "notes":  "weighted traffic: 50% search, 20% detail, 15% availability, 10% reservation, 5% checkout; conflicts=249, reservations=208, checkouts=70, system5xx=0%"
+    },
+    {
+        "scenario":  "Realistic-500",
+        "concurrentUsers":  500,
+        "averageLatencyMs":  "2.580,91 ms",
+        "p95LatencyMs":  "6.422,04 ms",
+        "p99LatencyMs":  "9.114,45 ms",
+        "errorRatePercent":  "7,35%",
+        "throughputRps":  "156,26 req/s",
+        "notes":  "weighted traffic: 50% search, 20% detail, 15% availability, 10% reservation, 5% checkout; conflicts=189, reservations=172, checkouts=44, system5xx=0%"
+    }
+]

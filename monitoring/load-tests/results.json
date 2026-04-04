@@ -1,0 +1,42 @@
+﻿[
+    {
+        "scenario":  "Warm-up",
+        "concurrentUsers":  50,
+        "averageLatencyMs":  "12,99 ms",
+        "p95LatencyMs":  "31,88 ms",
+        "p99LatencyMs":  "80,56 ms",
+        "errorRatePercent":  "0,00%",
+        "throughputRps":  "231,32 req/s",
+        "notes":  "k6 mixed dispatcher workload over 15s against http://localhost:8080"
+    },
+    {
+        "scenario":  "Peak",
+        "concurrentUsers":  100,
+        "averageLatencyMs":  "41,69 ms",
+        "p95LatencyMs":  "102,68 ms",
+        "p99LatencyMs":  "166,35 ms",
+        "errorRatePercent":  "0,00%",
+        "throughputRps":  "404,58 req/s",
+        "notes":  "k6 mixed dispatcher workload over 15s against http://localhost:8080"
+    },
+    {
+        "scenario":  "Stress",
+        "concurrentUsers":  200,
+        "averageLatencyMs":  "146,37 ms",
+        "p95LatencyMs":  "277,06 ms",
+        "p99LatencyMs":  "339,73 ms",
+        "errorRatePercent":  "0,00%",
+        "throughputRps":  "546,53 req/s",
+        "notes":  "k6 mixed dispatcher workload over 15s against http://localhost:8080"
+    },
+    {
+        "scenario":  "Burst",
+        "concurrentUsers":  500,
+        "averageLatencyMs":  "619,60 ms",
+        "p95LatencyMs":  "1.130,07 ms",
+        "p99LatencyMs":  "1.441,66 ms",
+        "errorRatePercent":  "0,00%",
+        "throughputRps":  "557,31 req/s",
+        "notes":  "k6 mixed dispatcher workload over 15s against http://localhost:8080"
+    }
+]
